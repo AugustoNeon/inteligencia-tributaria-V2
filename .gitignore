@@ -1,0 +1,12 @@
+node_modules
+dist
+*.local
+.DS_Store
+*.tsbuildinfo
+
+# ferramentas locais de agente/skills — não fazem parte do projeto
+.agents/
+.claude/
+.codex/
+.gemini/
+.impeccable/

@@ -1,0 +1,54 @@
+/* ————————————————————————————————————————————————
+   Tokens — Inteligência Tributária (ver DESIGN.md)
+   Instrumento fiscal de precisão: branco puro, petróleo, cobre.
+   ———————————————————————————————————————————————— */
+
+:root {
+  /* superfícies */
+  --bg: oklch(1 0 0);
+  --surface: oklch(0.972 0.006 210);
+  --surface-2: oklch(0.945 0.01 210);
+
+  /* tinta */
+  --ink: oklch(0.21 0.02 220);
+  --muted: oklch(0.44 0.02 220);
+  --ink-inversa: oklch(0.97 0.008 200);
+  --muted-inversa: oklch(0.78 0.03 205);
+
+  /* marca */
+  --petrol: oklch(0.33 0.06 210);
+  --petrol-deep: oklch(0.24 0.045 212);
+  --petrol-bright: oklch(0.56 0.1 212);
+  --petrol-wash: oklch(0.93 0.02 205);
+  --copper: oklch(0.58 0.13 45);
+  --copper-deep: oklch(0.45 0.11 40);
+  --copper-wash: oklch(0.94 0.025 55);
+
+  /* linhas e sombra */
+  --line: oklch(0.89 0.01 210);
+  --line-forte: oklch(0.8 0.015 210);
+  --sombra: 0 1px 2px oklch(0.2 0.02 220 / 0.06), 0 8px 24px -12px oklch(0.2 0.02 220 / 0.18);
+
+  /* dados (paleta validada — dataviz) */
+  --cor-cbs: #0080a4;
+  --cor-ibs: #3cb5cd;
+  --cor-is: #6a51b8;
+  --cor-piscofins: #943310;
+  --cor-ipi: #6e2408;
+  --cor-icms: #c2622a;
+  --cor-iss: #e09257;
+
+  /* tipografia */
+  --font-display: 'Archivo Black', 'Archivo Variable', system-ui, sans-serif;
+  --font-ui: 'Archivo Variable', system-ui, sans-serif;
+  --font-mono: 'Spline Sans Mono Variable', ui-monospace, monospace;
+
+  /* raios e z */
+  --raio: 10px;
+  --raio-s: 6px;
+  --z-nav: 100;
+  --z-tip: 300;
+
+  /* movimento */
+  --saida: cubic-bezier(0.22, 1, 0.36, 1);
+}
