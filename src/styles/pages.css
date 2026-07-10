@@ -530,6 +530,11 @@
   border: 1px solid var(--line);
   border-radius: var(--raio);
   padding: 22px;
+  min-width: 0;
+}
+
+.calc-form > * {
+  min-width: 0;
 }
 
 .form-titulo {
@@ -554,6 +559,7 @@
   font-size: 0.75rem;
   color: var(--petrol-bright);
   margin-top: -8px;
+  overflow-wrap: break-word;
 }
 
 .calc-resultado {
@@ -836,5 +842,14 @@
 
   .viz-panel {
     padding: 14px 14px 12px;
+  }
+
+  .viz-head {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .viz-toggle {
+    align-self: flex-start;
   }
 }

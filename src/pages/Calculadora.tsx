@@ -226,9 +226,9 @@ import { useMeasure } from '../components/charts/useMeasure'
 
 function TrajetoriaLinha({ pontos, precoHoje, anoAtivo }: { pontos: { ano: number; preco: number }[]; precoHoje: number; anoAtivo: number }) {
   const { ref, width } = useMeasure<HTMLDivElement>()
-  const w = Math.max(width, 320)
+  const w = Math.max(width, 300)
   const h = 180
-  const M = { topo: 14, dir: 18, base: 26, esq: 64 }
+  const M = { topo: 14, dir: 18, base: 26, esq: 48 }
   const valores = [...pontos.map((p) => p.preco), precoHoje]
   const min = Math.min(...valores) * 0.985
   const max = Math.max(...valores) * 1.015
@@ -253,10 +253,10 @@ function TrajetoriaLinha({ pontos, precoHoje, anoAtivo }: { pontos: { ano: numbe
           </g>
         ))}
         <text x={M.esq - 8} y={y(max) + 10} textAnchor="end" className="axis-num">
-          {brl(max)}
+          {Math.round(max).toLocaleString('pt-BR')}
         </text>
         <text x={M.esq - 8} y={y(min)} textAnchor="end" className="axis-num">
-          {brl(min)}
+          {Math.round(min).toLocaleString('pt-BR')}
         </text>
       </svg>
     </div>

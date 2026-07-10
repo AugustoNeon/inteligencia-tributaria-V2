@@ -329,6 +329,7 @@ main {
 .campo {
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 .campo-label {
@@ -384,7 +385,8 @@ main {
 
 select {
   width: 100%;
-  font: 500 0.9375rem var(--font-ui);
+  min-width: 0;
+  font: 500 1rem var(--font-ui);
   color: var(--ink);
   padding: 10px 12px;
   border: 1px solid var(--line-forte);
@@ -393,15 +395,18 @@ select {
 }
 
 .segmentado {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   background: var(--surface-2);
   border-radius: var(--raio-s);
   padding: 3px;
   gap: 2px;
+  min-width: 0;
 }
 
 .segmentado button {
-  padding: 6px 14px;
+  flex: 1 0 auto;
+  padding: 6px 12px;
   border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 600;
