@@ -55,6 +55,11 @@ export function Slope({ linhas, rotuloDe, rotuloPara, altura = 380, onHover, ati
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [linhas, plotH, maxV],
   )
+  const yLabelsEsq = useMemo(
+    () => espalhar(linhas.map((l) => y(l.de)), 15, M.topo + 6, M.topo + plotH - 2),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [linhas, plotH, maxV],
+  )
 
   const pctFmt = (v: number) => `${(v * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
   const marcar = (id: string | null) => {
@@ -91,7 +96,10 @@ export function Slope({ linhas, rotuloDe, rotuloPara, altura = 380, onHover, ati
               <line x1={x0} x2={x1} y1={y(l.de)} y2={y(l.para)} stroke={l.cor} strokeWidth={2} strokeLinecap="round" />
               <circle cx={x0} cy={y(l.de)} r={4.5} fill={l.cor} className="dot-ring" />
               <circle cx={x1} cy={y(l.para)} r={4.5} fill={l.cor} className="dot-ring" />
-              <text x={x0 - 10} y={y(l.de) + 4} textAnchor="end" className="slope-num">
+              {Math.abs(yLabelsEsq[i] - y(l.de)) > 7 && (
+                <line x1={x0 - 16} x2={x0 - 6} y1={yLabelsEsq[i]} y2={y(l.de)} className="leader" />
+              )}
+              <text x={x0 - 20} y={yLabelsEsq[i] + 4} textAnchor="end" className="slope-num">
                 {pctFmt(l.de)}
               </text>
               {precisaGuia && (
