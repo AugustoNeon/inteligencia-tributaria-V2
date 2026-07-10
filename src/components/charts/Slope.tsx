@@ -19,7 +19,7 @@ interface Props {
   ativo?: string | null
 }
 
-const M = { topo: 34, base: 18, esq: 74, dir: 190 }
+const M = { topo: 34, base: 18, esq: 74, dir: 214 }
 
 /** Resolve colisões verticais dos rótulos à direita (mín. 20px entre linhas). */
 function espalhar(ys: number[], minGap = 20, topo = 0, base = Infinity) {
