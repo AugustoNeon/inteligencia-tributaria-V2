@@ -93,9 +93,9 @@ export function Slope({ linhas, rotuloDe, rotuloPara, altura = 380, onHover, ati
             >
               {/* trilho de acerto generoso (invisível) */}
               <line x1={x0} x2={x1} y1={y(l.de)} y2={y(l.para)} stroke="transparent" strokeWidth={18} />
-              <line x1={x0} x2={x1} y1={y(l.de)} y2={y(l.para)} stroke={l.cor} strokeWidth={2} strokeLinecap="round" />
-              <circle cx={x0} cy={y(l.de)} r={4.5} fill={l.cor} className="dot-ring" />
-              <circle cx={x1} cy={y(l.para)} r={4.5} fill={l.cor} className="dot-ring" />
+              <line x1={x0} x2={x1} y1={y(l.de)} y2={y(l.para)} style={{ stroke: l.cor, strokeWidth: 2 }} strokeLinecap="round" />
+              <circle cx={x0} cy={y(l.de)} r={4.5} style={{ fill: l.cor }} className="dot-ring" />
+              <circle cx={x1} cy={y(l.para)} r={4.5} style={{ fill: l.cor }} className="dot-ring" />
               {Math.abs(yLabelsEsq[i] - y(l.de)) > 7 && (
                 <line x1={x0 - 16} x2={x0 - 6} y1={yLabelsEsq[i]} y2={y(l.de)} className="leader" />
               )}

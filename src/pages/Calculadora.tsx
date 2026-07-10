@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CabecalhoPagina } from '../components/layout/Shell'
 import { CompareBars } from '../components/charts/CompareBars'
 import { VizPanel } from '../components/charts/VizPanel'
 import { Callout, Campo, EntradaNumero, Sanfona, Segmentado, StatTile } from '../components/ui/kit'
 import { CATEGORIAS, CATEGORIA_PADRAO } from '../data/categorias'
+import { ICMS_UF, UF_PADRAO, icmsDaUf } from '../data/icmsUf'
 import { ANOS_SIMULAVEIS } from '../data/transicao'
 import { comparar, trajetoriaPreco } from '../lib/engine'
 import { brl, pct, pctDelta } from '../lib/format'
@@ -12,21 +14,60 @@ import { CORES } from '../data/tributos'
 const GRUPOS = ['Produtos', 'Serviços', 'Regimes favorecidos'] as const
 
 export function Calculadora() {
-  const [preco, setPreco] = useState(1000)
-  const [catId, setCatId] = useState(CATEGORIA_PADRAO)
-  const [ano, setAno] = useState(2033)
-  const [icmsPct, setIcmsPct] = useState<number | null>(null)
-  const [issPct, setIssPct] = useState<number | null>(null)
+  // estado inicial pode vir da URL — links de simulação compartilháveis
+  const [params, setParams] = useSearchParams()
+  const [preco, setPreco] = useState(() => {
+    const v = Number(params.get('preco'))
+    return Number.isFinite(v) && v > 0 ? v : 1000
+  })
+  const [catId, setCatId] = useState(() =>
+    CATEGORIAS.some((c) => c.id === params.get('cat')) ? (params.get('cat') as string) : CATEGORIA_PADRAO,
+  )
+  const [ano, setAno] = useState(() => {
+    const a = Number(params.get('ano'))
+    return ANOS_SIMULAVEIS.includes(a) ? a : 2033
+  })
+  const [uf, setUf] = useState(() =>
+    ICMS_UF.some((u) => u.uf === params.get('uf')) ? (params.get('uf') as string) : UF_PADRAO,
+  )
+  const [icmsPct, setIcmsPct] = useState<number | null>(() => {
+    const v = params.get('icms')
+    return v !== null && Number.isFinite(Number(v)) ? Number(v) : null
+  })
+  const [issPct, setIssPct] = useState<number | null>(() => {
+    const v = params.get('iss')
+    return v !== null && Number.isFinite(Number(v)) ? Number(v) : null
+  })
+  const [copiado, setCopiado] = useState(false)
+
+  // colar um link compartilhado com a página já aberta também re-sincroniza o formulário
+  useEffect(() => {
+    if (![...params.keys()].length) return
+    const p = Number(params.get('preco'))
+    if (Number.isFinite(p) && p > 0) setPreco(p)
+    const c = params.get('cat')
+    if (c && CATEGORIAS.some((x) => x.id === c)) setCatId(c)
+    const a = Number(params.get('ano'))
+    if (ANOS_SIMULAVEIS.includes(a)) setAno(a)
+    const u = params.get('uf')
+    if (u && ICMS_UF.some((x) => x.uf === u)) setUf(u)
+    const icms = params.get('icms')
+    if (icms !== null && Number.isFinite(Number(icms))) setIcmsPct(Number(icms))
+    const iss = params.get('iss')
+    if (iss !== null && Number.isFinite(Number(iss))) setIssPct(Number(iss))
+  }, [params])
 
   const categoria = CATEGORIAS.find((c) => c.id === catId)!
+  // categorias com alíquota modal seguem o ICMS do estado selecionado
+  const icmsBase = categoria.icmsModal ? icmsDaUf(uf).aliquota : categoria.atual.icms
 
   const perfil = useMemo(
     () => ({
       ...categoria.atual,
-      icms: categoria.atual.icms !== undefined && icmsPct !== null ? icmsPct / 100 : categoria.atual.icms,
+      icms: categoria.atual.icms !== undefined ? (icmsPct !== null ? icmsPct / 100 : icmsBase) : undefined,
       iss: categoria.atual.iss !== undefined && issPct !== null ? issPct / 100 : categoria.atual.iss,
     }),
-    [categoria, icmsPct, issPct],
+    [categoria, icmsPct, issPct, icmsBase],
   )
 
   const r = useMemo(() => comparar(preco, categoria, perfil, ano), [preco, categoria, perfil, ano])
@@ -36,6 +77,26 @@ export function Calculadora() {
     setCatId(id)
     setIcmsPct(null)
     setIssPct(null)
+  }
+
+  const trocarUf = (novaUf: string) => {
+    setUf(novaUf)
+    setIcmsPct(null)
+  }
+
+  const copiarLink = async () => {
+    const q = new URLSearchParams({ preco: String(preco), cat: catId, ano: String(ano) })
+    if (categoria.icmsModal) q.set('uf', uf)
+    if (icmsPct !== null) q.set('icms', String(icmsPct))
+    if (issPct !== null) q.set('iss', String(issPct))
+    setParams(q, { replace: true })
+    try {
+      await navigator.clipboard.writeText(`${location.origin}${location.pathname}#/calculadora?${q.toString()}`)
+      setCopiado(true)
+      window.setTimeout(() => setCopiado(false), 2200)
+    } catch {
+      // sem permissão de clipboard: a URL já está na barra de endereço
+    }
   }
 
   const legenda = [
@@ -79,6 +140,18 @@ export function Calculadora() {
             <p className="calc-cat-desc">{categoria.descricao}</p>
             <p className="calc-cat-ref mono">{categoria.refLegal}</p>
 
+            {categoria.icmsModal && (
+              <Campo label="Estado da operação" sufixo="ICMS" dica="Alíquota modal interna de referência (2025) — ajuste fino em Ajustes avançados">
+                <select value={uf} onChange={(e) => trocarUf(e.target.value)}>
+                  {ICMS_UF.map((u) => (
+                    <option key={u.uf} value={u.uf}>
+                      {u.uf} — {u.nome} ({(u.aliquota * 100).toLocaleString('pt-BR')}%)
+                    </option>
+                  ))}
+                </select>
+              </Campo>
+            )}
+
             <Campo label="Ano da simulação">
               <Segmentado
                 ariaLabel="Ano da simulação"
@@ -90,9 +163,13 @@ export function Calculadora() {
 
             <Sanfona titulo="Ajustes avançados">
               {categoria.atual.icms !== undefined && (
-                <Campo label="ICMS do seu estado" sufixo="% por dentro" dica="Padrão da simulação: alíquota modal típica">
+                <Campo
+                  label="ICMS da operação"
+                  sufixo="% por dentro"
+                  dica={categoria.icmsModal ? `Padrão: alíquota modal de ${uf}` : 'Padrão: alíquota típica desta categoria'}
+                >
                   <EntradaNumero
-                    valor={icmsPct ?? categoria.atual.icms * 100}
+                    valor={icmsPct ?? (icmsBase ?? 0) * 100}
                     onMudar={(v) => setIcmsPct(v)}
                     min={0}
                     max={30}
@@ -118,6 +195,11 @@ export function Calculadora() {
           </aside>
 
           <div className="calc-resultado">
+            <div className="calc-share">
+              <button className={`botao-acao${copiado ? ' feito' : ''}`} onClick={copiarLink}>
+                {copiado ? '✓ Link copiado' : 'Copiar link da simulação'}
+              </button>
+            </div>
             <div className="calc-tiles">
               <StatTile
                 label={`Preço estimado em ${ano}`}
@@ -243,10 +325,15 @@ function TrajetoriaLinha({ pontos, precoHoje, anoAtivo }: { pontos: { ano: numbe
         <text x={w - M.dir} y={y(precoHoje) - 6} textAnchor="end" className="axis-num">
           hoje · {brl(precoHoje)}
         </text>
-        <path d={d} fill="none" stroke={CORES.cbs} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        <path d={d} style={{ fill: 'none', stroke: CORES.cbs, strokeWidth: 2 }} strokeLinejoin="round" strokeLinecap="round" />
         {pontos.map((p, i) => (
           <g key={p.ano}>
-            <circle cx={x(i)} cy={y(p.preco)} r={p.ano === anoAtivo ? 5.5 : 4} fill={p.ano === anoAtivo ? CORES.cbs : 'var(--bg)'} stroke={CORES.cbs} strokeWidth={2} />
+            <circle
+              cx={x(i)}
+              cy={y(p.preco)}
+              r={p.ano === anoAtivo ? 5.5 : 4}
+              style={{ fill: p.ano === anoAtivo ? CORES.cbs : 'var(--bg)', stroke: CORES.cbs, strokeWidth: 2 }}
+            />
             <text x={x(i)} y={h - 8} textAnchor="middle" className={`axis-num${p.ano === anoAtivo ? ' axis-num-on' : ''}`}>
               {String(p.ano).slice(2)}
             </text>

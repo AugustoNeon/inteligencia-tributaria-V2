@@ -29,6 +29,8 @@ export interface CategoriaCalc {
   reducao: 0 | 0.3 | 0.6 | 1
   refLegal: string
   notas?: string[]
+  /** usa a alíquota modal de ICMS — habilita o seletor de estado (UF) */
+  icmsModal?: boolean
 }
 
 export const CATEGORIAS: CategoriaCalc[] = [
@@ -40,6 +42,7 @@ export const CATEGORIAS: CategoriaCalc[] = [
     atual: { icms: 0.18, pisCofins: 0.0925 },
     reducao: 0,
     refLegal: 'LC 214/2025 — alíquota padrão (referência estimada de 26,5%)',
+    icmsModal: true,
   },
   {
     id: 'produto-industrializado',
@@ -49,6 +52,7 @@ export const CATEGORIAS: CategoriaCalc[] = [
     atual: { icms: 0.18, pisCofins: 0.0925, ipi: 0.05 },
     reducao: 0,
     refLegal: 'LC 214/2025 — alíquota padrão; IPI zerado a partir de 2027 (exceto ZFM)',
+    icmsModal: true,
   },
   {
     id: 'cesta-basica',
@@ -72,6 +76,7 @@ export const CATEGORIAS: CategoriaCalc[] = [
     reducao: 0.6,
     refLegal: 'LC 214/2025 — redução de 60%; lista com alíquota zero em anexo próprio',
     notas: ['Parte dos medicamentos (ex.: tratamento de câncer e doenças raras) fica com alíquota zero.'],
+    icmsModal: true,
   },
   {
     id: 'servico-padrao',
@@ -137,6 +142,7 @@ export const CATEGORIAS: CategoriaCalc[] = [
     atual: { icms: 0.18, pisCofins: 0.0925 },
     reducao: 0.6,
     refLegal: 'LC 214/2025 — redução de 60% p/ alimentos de consumo humano listados',
+    icmsModal: true,
   },
 ]
 

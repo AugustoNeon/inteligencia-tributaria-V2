@@ -18,15 +18,20 @@ export interface Tributo {
   destino: string
 }
 
+/**
+ * Referências de CSS custom properties definidas em tokens.css — assim os
+ * gráficos trocam de paleta junto com o tema (claro/escuro), cada uma
+ * validada para a própria superfície.
+ */
 export const CORES = {
-  cbs: '#0080a4',
-  ibs: '#3cb5cd',
-  is: '#6a51b8',
-  pisCofins: '#943310',
-  ipi: '#6e2408',
-  icms: '#c2622a',
-  iss: '#e09257',
-  federaisAntigos: '#943310',
+  cbs: 'var(--cor-cbs)',
+  ibs: 'var(--cor-ibs)',
+  is: 'var(--cor-is)',
+  pisCofins: 'var(--cor-piscofins)',
+  ipi: 'var(--cor-ipi)',
+  icms: 'var(--cor-icms)',
+  iss: 'var(--cor-iss)',
+  federaisAntigos: 'var(--cor-piscofins)',
 } as const
 
 export const TRIBUTOS_ANTIGOS: Tributo[] = [

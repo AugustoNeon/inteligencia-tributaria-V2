@@ -4,6 +4,8 @@
    ———————————————————————————————————————————————— */
 
 :root {
+  color-scheme: light;
+
   /* superfícies */
   --bg: oklch(1 0 0);
   --surface: oklch(0.972 0.006 210);
@@ -51,4 +53,44 @@
 
   /* movimento */
   --saida: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ————————————————————————————————————————————————
+   Tema escuro — passos próprios, não inversão automática.
+   Paleta de dados revalidada p/ a superfície escura (dataviz):
+   banda L 0.48–0.67, croma ≥ 0.1; par cobre/dourado na floor band
+   coberto por gaps de 2px, legenda, rótulos diretos e vista tabela.
+   ———————————————————————————————————————————————— */
+
+:root[data-tema='escuro'] {
+  color-scheme: dark;
+
+  --bg: oklch(0.17 0.014 220);
+  --surface: oklch(0.215 0.016 218);
+  --surface-2: oklch(0.27 0.02 218);
+
+  --ink: oklch(0.93 0.01 210);
+  --muted: oklch(0.73 0.02 212);
+  --ink-inversa: oklch(0.96 0.008 200);
+  --muted-inversa: oklch(0.76 0.03 205);
+
+  --petrol: oklch(0.42 0.07 210);
+  --petrol-deep: oklch(0.22 0.04 212);
+  --petrol-bright: oklch(0.71 0.09 210);
+  --petrol-wash: oklch(0.28 0.035 210);
+  --copper: oklch(0.68 0.12 48);
+  --copper-deep: oklch(0.73 0.11 48);
+  --copper-wash: oklch(0.28 0.04 50);
+
+  --line: oklch(0.31 0.015 215);
+  --line-forte: oklch(0.42 0.02 215);
+  --sombra: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 24px -12px oklch(0 0 0 / 0.6);
+
+  --cor-cbs: #0e739e;
+  --cor-ibs: #27a0bb;
+  --cor-is: #8f7ce0;
+  --cor-piscofins: #a04724;
+  --cor-ipi: #7e3418;
+  --cor-icms: #c05f2b;
+  --cor-iss: #bd8a2b;
 }

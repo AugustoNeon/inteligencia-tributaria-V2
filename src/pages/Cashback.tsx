@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CabecalhoPagina } from '../components/layout/Shell'
 import { Donut } from '../components/charts/Donut'
 import { VizPanel } from '../components/charts/VizPanel'
@@ -6,22 +7,79 @@ import { Callout, Campo, EntradaNumero, Sanfona, Segmentado, StatTile } from '..
 import { CALENDARIO_CASHBACK, ESSENCIAIS, NOTAS_CASHBACK, REQUISITOS, SALARIO_MINIMO_PADRAO } from '../data/cashback'
 import { calcularCashback } from '../lib/cashback'
 import { brl, pct } from '../lib/format'
+import { CORES } from '../data/tributos'
 
-const CORES_DONUT = ['#0080a4', '#3cb5cd', '#6a51b8', '#c2622a', '#e09257', '#943310']
+const CORES_DONUT = [CORES.cbs, CORES.ibs, CORES.is, CORES.icms, CORES.iss, CORES.pisCofins]
+
+const GASTOS_PADRAO: Record<string, number> = {
+  energia: 180,
+  agua: 90,
+  'gas-encanado': 0,
+  botijao: 110,
+  telecom: 120,
+}
 
 export function Cashback() {
-  const [pessoas, setPessoas] = useState(4)
-  const [renda, setRenda] = useState(2800)
-  const [cadunico, setCadunico] = useState<'sim' | 'nao'>('sim')
-  const [salarioMinimo, setSalarioMinimo] = useState(SALARIO_MINIMO_PADRAO)
-  const [gastos, setGastos] = useState<Record<string, number>>({
-    energia: 180,
-    agua: 90,
-    'gas-encanado': 0,
-    botijao: 110,
-    telecom: 120,
-  })
-  const [demais, setDemais] = useState(600)
+  // estado inicial pode vir da URL — simulações compartilháveis
+  const [params, setParams] = useSearchParams()
+  const numParam = (chave: string, padrao: number) => {
+    const v = Number(params.get(chave))
+    return params.get(chave) !== null && Number.isFinite(v) && v >= 0 ? v : padrao
+  }
+  const [pessoas, setPessoas] = useState(() => Math.max(1, Math.round(numParam('pe', 4))))
+  const [renda, setRenda] = useState(() => numParam('renda', 2800))
+  const [cadunico, setCadunico] = useState<'sim' | 'nao'>(() => (params.get('cad') === 'nao' ? 'nao' : 'sim'))
+  const [salarioMinimo, setSalarioMinimo] = useState(() => numParam('sm', SALARIO_MINIMO_PADRAO))
+  const [gastos, setGastos] = useState<Record<string, number>>(() => ({
+    energia: numParam('en', GASTOS_PADRAO.energia),
+    agua: numParam('ag', GASTOS_PADRAO.agua),
+    'gas-encanado': numParam('gn', GASTOS_PADRAO['gas-encanado']),
+    botijao: numParam('bo', GASTOS_PADRAO.botijao),
+    telecom: numParam('te', GASTOS_PADRAO.telecom),
+  }))
+  const [demais, setDemais] = useState(() => numParam('de', 600))
+  const [copiado, setCopiado] = useState(false)
+
+  // colar um link compartilhado com a página já aberta também re-sincroniza o formulário
+  useEffect(() => {
+    if (![...params.keys()].length) return
+    setPessoas(Math.max(1, Math.round(numParam('pe', 4))))
+    setRenda(numParam('renda', 2800))
+    setCadunico(params.get('cad') === 'nao' ? 'nao' : 'sim')
+    setSalarioMinimo(numParam('sm', SALARIO_MINIMO_PADRAO))
+    setGastos({
+      energia: numParam('en', GASTOS_PADRAO.energia),
+      agua: numParam('ag', GASTOS_PADRAO.agua),
+      'gas-encanado': numParam('gn', GASTOS_PADRAO['gas-encanado']),
+      botijao: numParam('bo', GASTOS_PADRAO.botijao),
+      telecom: numParam('te', GASTOS_PADRAO.telecom),
+    })
+    setDemais(numParam('de', 600))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params])
+
+  const copiarLink = async () => {
+    const q = new URLSearchParams({
+      pe: String(pessoas),
+      renda: String(renda),
+      cad: cadunico,
+      sm: String(salarioMinimo),
+      en: String(gastos.energia ?? 0),
+      ag: String(gastos.agua ?? 0),
+      gn: String(gastos['gas-encanado'] ?? 0),
+      bo: String(gastos.botijao ?? 0),
+      te: String(gastos.telecom ?? 0),
+      de: String(demais),
+    })
+    setParams(q, { replace: true })
+    try {
+      await navigator.clipboard.writeText(`${location.origin}${location.pathname}#/cashback?${q.toString()}`)
+      setCopiado(true)
+      window.setTimeout(() => setCopiado(false), 2200)
+    } catch {
+      // sem permissão de clipboard: a URL já está na barra de endereço
+    }
+  }
 
   const r = useMemo(
     () =>
@@ -96,6 +154,11 @@ export function Cashback() {
           </aside>
 
           <div className="calc-resultado">
+            <div className="calc-share">
+              <button className={`botao-acao${copiado ? ' feito' : ''}`} onClick={copiarLink}>
+                {copiado ? '✓ Link copiado' : 'Copiar link da simulação'}
+              </button>
+            </div>
             <div className={`elegibilidade ${r.elegivel ? 'ok' : 'nao'}`} role="status">
               {r.elegivel ? (
                 <>

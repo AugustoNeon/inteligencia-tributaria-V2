@@ -45,7 +45,7 @@ function DiagramaFusao() {
       ))}
       {novos.map((t, i) => (
         <g key={t.sigla} className="fusao-chip" style={{ animationDelay: `${0.9 + i * 0.12}s` }}>
-          <rect x={262} y={t.y} width={110} height={28} rx={7} fill={t.cor} />
+          <rect x={262} y={t.y} width={110} height={28} rx={7} style={{ fill: t.cor }} />
           <text x={317} y={t.y + 19} textAnchor="middle" className="fusao-sigla-nova">
             {t.sigla}
           </text>

@@ -39,6 +39,14 @@ segundo papel e é *semântico*: sistema antigo em extinção. Nunca inverter.
 Regra fixa: família ferrugem = tributos extintos; família petróleo = IVA dual;
 violeta = Imposto Seletivo. Texto nunca veste cor de série.
 
+**Tema escuro** (selecionado, não invertido — revalidado p/ superfície escura,
+banda L 0.48–0.67): CBS `#0e739e` · IBS `#27a0bb` · PIS/Cofins `#a04724` ·
+ICMS `#c05f2b` · ISS `#bd8a2b` (desloca p/ dourado — 3 passos de ferrugem não
+cabem na banda escura com separação CVD) · IS `#8f7ce0`. O par cobre/dourado
+fica na floor band (ΔE 10,5), coberto pelos gaps de 2px, legenda, rótulos
+diretos e vista tabela. Cores expostas como `--cor-*` em tokens.css; os
+gráficos as consomem via `style` (não atributo SVG) para trocarem com o tema.
+
 ## Tipografia
 
 - **Display** (`--font-display`): Archivo Black — h1, títulos de seção, marca.

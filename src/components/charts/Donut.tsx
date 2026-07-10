@@ -62,10 +62,12 @@ export function Donut({ fatias, centro, centroRotulo, formatar, tamanho = 240 }:
           <path
             key={fatia.id}
             d={arcoPath(a0, a1)}
-            fill={fatia.cor}
-            fillOpacity={hover && hover.id !== fatia.id ? 0.3 : 0.92}
-            stroke="var(--bg)"
-            strokeWidth={2}
+            style={{
+              fill: fatia.cor,
+              fillOpacity: hover && hover.id !== fatia.id ? 0.3 : 0.92,
+              stroke: 'var(--bg)',
+              strokeWidth: 2,
+            }}
             className="donut-slice"
             onMouseMove={(e) => {
               const rect = e.currentTarget.ownerSVGElement!.getBoundingClientRect()

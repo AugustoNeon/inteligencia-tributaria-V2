@@ -126,6 +126,23 @@ button {
   border-bottom-color: var(--cor-ibs);
 }
 
+.tema-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: var(--muted-inversa);
+  transition: color 150ms ease-out, background 150ms ease-out;
+}
+
+.tema-btn:hover {
+  color: var(--ink-inversa);
+  background: oklch(1 0 0 / 0.09);
+}
+
 main {
   min-height: 70vh;
 }
@@ -308,7 +325,7 @@ main {
 .source-tipo {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
-  color: var(--bg);
+  color: var(--ink-inversa);
   background: var(--petrol);
   border-radius: 4px;
   padding: 2px 7px;
@@ -834,6 +851,84 @@ select {
 .cbars-tip {
   transform: translateX(-50%);
   white-space: nowrap;
+}
+
+/* ============ ações ============ */
+.calc-share {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -8px;
+}
+
+.botao-acao {
+  border: 1px solid var(--line-forte);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--bg);
+  transition: border-color 150ms ease-out, color 150ms ease-out;
+}
+
+.botao-acao:hover {
+  border-color: var(--petrol-bright);
+}
+
+.botao-acao.feito {
+  border-color: oklch(0.55 0.11 165);
+  color: oklch(0.45 0.11 165);
+}
+
+/* ============ tema escuro: elementos de cor fixa ============ */
+:root[data-tema='escuro'] .callout-info {
+  color: oklch(0.88 0.03 210);
+}
+
+:root[data-tema='escuro'] .callout-atencao {
+  color: oklch(0.9 0.05 55);
+}
+
+:root[data-tema='escuro'] .selo-novo {
+  background: oklch(0.3 0.05 208);
+  color: oklch(0.85 0.05 205);
+}
+
+:root[data-tema='escuro'] .selo-antigo {
+  background: oklch(0.3 0.05 48);
+  color: oklch(0.87 0.06 55);
+}
+
+:root[data-tema='escuro'] .elegibilidade.ok {
+  background: oklch(0.28 0.05 175);
+  color: oklch(0.88 0.07 172);
+}
+
+:root[data-tema='escuro'] .elegibilidade.nao {
+  background: oklch(0.29 0.05 48);
+  color: oklch(0.9 0.05 55);
+}
+
+:root[data-tema='escuro'] .glossario-tag {
+  color: var(--petrol-bright);
+}
+
+:root[data-tema='escuro'] .trilho-ano.on {
+  background: var(--petrol);
+  border-color: var(--petrol);
+}
+
+:root[data-tema='escuro'] .viz-toggle button.on {
+  background: var(--surface);
+}
+
+:root[data-tema='escuro'] .botao-acao.feito {
+  border-color: oklch(0.55 0.09 165);
+  color: oklch(0.8 0.1 165);
+}
+
+:root[data-tema='escuro'] .tema-btn:hover {
+  background: oklch(1 0 0 / 0.12);
 }
 
 /* ============ reduced motion ============ */

@@ -1,5 +1,5 @@
 import { NavLink, Link } from 'react-router-dom'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 
 const NAV = [
   { para: '/', rotulo: 'Início', fim: true },
@@ -27,6 +27,40 @@ function Marca() {
   )
 }
 
+function BotaoTema() {
+  const [tema, setTema] = useState(() => (document.documentElement.dataset.tema === 'escuro' ? 'escuro' : 'claro'))
+
+  const alternar = () => {
+    const novo = tema === 'escuro' ? 'claro' : 'escuro'
+    document.documentElement.dataset.tema = novo
+    try {
+      localStorage.setItem('tema', novo)
+    } catch {
+      // storage indisponível: o tema vale só para esta visita
+    }
+    setTema(novo)
+  }
+
+  return (
+    <button
+      className="tema-btn"
+      onClick={alternar}
+      aria-label={tema === 'escuro' ? 'Mudar para o tema claro' : 'Mudar para o tema escuro'}
+    >
+      {tema === 'escuro' ? (
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden>
+          <path d="M20.7 14.9A8.8 8.8 0 0 1 9.1 3.3 9 9 0 1 0 20.7 14.9Z" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
 export function TopNav() {
   return (
     <header className="topbar">
@@ -39,6 +73,7 @@ export function TopNav() {
             </NavLink>
           ))}
         </nav>
+        <BotaoTema />
       </div>
     </header>
   )

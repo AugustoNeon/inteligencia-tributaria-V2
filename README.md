@@ -6,13 +6,27 @@
 
 > Projeto de portfólio (análise de dados + engenharia frontend). As simulações são **estimativas didáticas** baseadas na EC 132/2023 e na LC 214/2025 — não substituem orientação contábil ou jurídica.
 
+## Telas
+
+| Início | Calculadora comparativa |
+|---|---|
+| ![Página inicial com o diagrama dos 5 tributos virando 3](docs/screenshots/inicio.png) | ![Calculadora com ICMS por estado e barras comparativas](docs/screenshots/calculadora.png) |
+
+| Linha do tempo | Impacto por setor |
+|---|---|
+| ![Linha do tempo da transição com gráfico de área](docs/screenshots/linha-do-tempo.png) | ![Slope chart da carga por setor](docs/screenshots/setores.png) |
+
+Tema escuro incluído (paleta de dados revalidada para a superfície escura):
+
+![Início no tema escuro](docs/screenshots/inicio-escuro.png)
+
 ## O que tem dentro
 
 | Página | O que faz |
 |---|---|
 | **Guia** | A reforma explicada: por que mudar, o que sai (PIS/Cofins/IPI/ICMS/ISS), o que entra (CBS/IBS/IS), os seis mecanismos-chave, a escada de alíquotas (0% / −60% / −30% / regimes específicos) e FAQ — cada seção com o texto legal anexado |
 | **Linha do tempo** | A transição ano a ano (2023 → 2033 + epílogo 2078), sincronizada com um gráfico de área empilhada da troca de sistema |
-| **Calculadora** | Compara o preço de hoje com o preço em qualquer ano da transição, por categoria (produto, serviço, cesta básica, saúde, profissional liberal…), com ICMS/ISS ajustáveis e todas as premissas expostas |
+| **Calculadora** | Compara o preço de hoje com o preço em qualquer ano da transição, por categoria (produto, serviço, cesta básica, saúde, profissional liberal…), com **ICMS real por estado (27 UFs)**, ISS ajustável, link compartilhável da simulação e todas as premissas expostas |
 | **Cashback** | Simula a devolução de CBS/IBS para famílias do CadÚnico: teste de elegibilidade, devolução por conta (energia, água, gás, telecom) e projeção anual |
 | **Setores** | Slope chart de quem tende a pagar mais ou menos no sistema pleno, com a premissa de cada estimativa |
 | **Glossário e fontes** | 20+ termos pesquisáveis (com busca sem acento) e a biblioteca de documentos oficiais |
@@ -23,6 +37,9 @@
 - **Motor de cálculo isolado** (`src/lib/engine.ts`): modela tributos "por dentro" (sistema atual) vs. IVA "por fora" (novo), incluindo os anos de convivência 2027–2032 com fator de ICMS/ISS. Fórmula central: `P = B × (1 + t_fora) / (1 − t_dentro)`.
 - **Dados como código** (`src/data/*.ts`): cronograma da transição, categorias com referência legal, regras de cashback e fontes — tudo tipado e versionado.
 - **Paleta validada para daltonismo** (ΔE adjacente ≥ 15 em simulação deutan/tritan) com codificação semântica: família ferrugem = tributos em extinção, família petróleo = IVA dual, violeta = Imposto Seletivo.
+- **Testes automatizados (Vitest)** cobrindo os motores de cálculo — fórmulas por dentro/por fora, anos de convivência, reduções, elegibilidade e regras do cashback — executados no CI antes de cada deploy.
+- **Tema claro/escuro** com paleta de dados própria para cada superfície (o escuro não é inversão: cada passo foi revalidado no script de acessibilidade), persistido em `localStorage` e sem flash de tema na carga.
+- **Simulações compartilháveis**: o estado da calculadora e do cashback vira query string — um clique copia o link para mandar ao contador.
 - **HashRouter + base relativa** para funcionar no GitHub Pages sem configuração de servidor; deploy automático via GitHub Actions.
 - Contraste AAA no texto (corpo 17,6:1; secundário 7,7:1), `prefers-reduced-motion` respeitado, gráficos com `role="img"` e `aria-label`.
 
@@ -31,6 +48,7 @@
 ```bash
 npm install
 npm run dev      # http://localhost:5173
+npm test         # suite de testes dos motores de cálculo (Vitest)
 npm run build    # type-check + build de produção em dist/
 ```
 

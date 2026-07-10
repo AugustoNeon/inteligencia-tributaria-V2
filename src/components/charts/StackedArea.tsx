@@ -92,10 +92,7 @@ export function StackedArea({ xRotulos, series, altura = 320, selecionado, onSel
           <path
             key={serie.id}
             d={areaPath(baixo, alto)}
-            fill={serie.cor}
-            fillOpacity={0.82}
-            stroke="var(--bg)"
-            strokeWidth={2}
+            style={{ fill: serie.cor, fillOpacity: 0.82, stroke: 'var(--bg)', strokeWidth: 2 }}
             strokeLinejoin="round"
             className="area-band"
           />
@@ -121,7 +118,7 @@ export function StackedArea({ xRotulos, series, altura = 320, selecionado, onSel
             {faixas
               .filter(({ serie }) => serie.valores[ativo] > 0.5)
               .map(({ serie, alto }) => (
-                <circle key={serie.id} cx={x(ativo)} cy={y(alto[ativo])} r={4.5} fill={serie.cor} className="dot-ring" />
+                <circle key={serie.id} cx={x(ativo)} cy={y(alto[ativo])} r={4.5} style={{ fill: serie.cor }} className="dot-ring" />
               ))}
           </g>
         )}

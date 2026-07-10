@@ -8,7 +8,7 @@ import { pct, pctDelta } from '../lib/format'
 import { CORES } from '../data/tributos'
 
 /** cor por direção do impacto: sobe = cobre (mais carga), cai = petróleo */
-const corDoSetor = (hoje: number, novo: number) => (novo > hoje + 0.005 ? CORES.icms : novo < hoje - 0.005 ? CORES.cbs : '#6a51b8')
+const corDoSetor = (hoje: number, novo: number) => (novo > hoje + 0.005 ? CORES.icms : novo < hoje - 0.005 ? CORES.cbs : CORES.is)
 
 export function Setores() {
   const [ativo, setAtivo] = useState<string | null>(null)

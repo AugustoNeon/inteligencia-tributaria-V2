@@ -22,6 +22,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm test
       - run: npm run build
       # publica dist/ na branch gh-pages — o GitHub Pages ativa automaticamente
       - uses: peaceiris/actions-gh-pages@v4
