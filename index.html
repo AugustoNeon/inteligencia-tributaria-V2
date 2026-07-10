@@ -9,6 +9,20 @@
       content="Atlas interativo da Reforma Tributária brasileira: guia com fontes oficiais, linha do tempo 2023–2033, calculadora comparativa, simulador de cashback e impacto por setor."
     />
     <meta name="theme-color" content="#12333d" />
+    <script>
+      // aplica o tema antes da primeira pintura (evita flash)
+      ;(function () {
+        try {
+          var t = localStorage.getItem('tema')
+          if (t !== 'claro' && t !== 'escuro') {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro'
+          }
+          document.documentElement.dataset.tema = t
+        } catch (e) {
+          document.documentElement.dataset.tema = 'claro'
+        }
+      })()
+    </script>
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Inteligência Tributária — atlas da Reforma Tributária" />
     <meta
@@ -18,8 +32,8 @@
     <meta property="og:url" content="https://augustoneon.github.io/inteligencia-tributaria-V2/" />
     <meta property="og:locale" content="pt_BR" />
     <title>Inteligência Tributária — atlas da Reforma Tributária</title>
-    <script type="module" crossorigin src="./assets/index-BmmWfwre.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CserAnb3.css">
+    <script type="module" crossorigin src="./assets/index-DknhDgdy.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DLB35yTB.css">
   </head>
   <body>
     <div id="root"></div>
