@@ -16,10 +16,6 @@
 |---|---|
 | ![Linha do tempo da transição com gráfico de área](docs/screenshots/linha-do-tempo.png) | ![Slope chart da carga por setor](docs/screenshots/setores.png) |
 
-Tema escuro incluído (paleta de dados revalidada para a superfície escura):
-
-![Início no tema escuro](docs/screenshots/inicio-escuro.png)
-
 ## O que tem dentro
 
 | Página | O que faz |
