@@ -479,6 +479,11 @@ select {
   gap: 10px;
 }
 
+/* fechada: o corpo fica no DOM (a impressão o revela), mas não na tela */
+.sanfona-corpo[hidden] {
+  display: none;
+}
+
 .sanfona-corpo ul {
   margin: 0;
   padding-left: 18px;
@@ -675,6 +680,75 @@ select {
   flex-shrink: 0;
 }
 
+/* mapa coroplético do Brasil (ICMS por UF) */
+.mapa-holder {
+  position: relative;
+}
+
+.mapa-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.mapa-uf {
+  stroke: var(--bg);
+  stroke-width: 1;
+  cursor: pointer;
+  transition: fill 150ms ease-out;
+}
+
+.mapa-uf:hover {
+  stroke: var(--petrol-bright);
+  stroke-width: 1.5;
+}
+
+.mapa-uf-contorno {
+  fill: none;
+  stroke: var(--petrol-bright);
+  stroke-width: 2.25;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.mapa-sigla {
+  font: 600 10px var(--font-mono);
+  fill: var(--ink);
+  stroke: var(--bg);
+  stroke-width: 2.5px;
+  paint-order: stroke;
+  stroke-linejoin: round;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.mapa-sigla.on {
+  font-weight: 800;
+}
+
+.mapa-legenda {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.mapa-legenda li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mapa-tip {
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+  min-width: 0;
+}
+
 /* moldura viz */
 .viz-panel {
   margin: 0;
@@ -857,6 +931,8 @@ select {
 .calc-share {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-bottom: -8px;
 }
 

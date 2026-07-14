@@ -6,6 +6,8 @@ import { VizPanel } from '../components/charts/VizPanel'
 import { Selo } from '../components/ui/kit'
 import { CORES } from '../data/tributos'
 import { EPILOGO_2078, TRANSICAO } from '../data/transicao'
+import { anoDaTransicao, dataLonga, progressoTransicao, proximoMarco } from '../lib/agora'
+import { pct } from '../lib/format'
 
 const FASES: Record<string, { rotulo: string; tom: 'neutro' | 'novo' | 'antigo' | 'destaque' }> = {
   preparacao: { rotulo: 'preparação', tom: 'neutro' },
@@ -17,13 +19,18 @@ const FASES: Record<string, { rotulo: string; tom: 'neutro' | 'novo' | 'antigo' 
 
 export function LinhaDoTempo() {
   const [params, setParams] = useSearchParams()
+  const hoje = useMemo(() => new Date(), [])
+  const anoHoje = anoDaTransicao(hoje)
   const anoParam = Number(params.get('ano'))
+  // sem ?ano na URL, a página abre no ano em que estamos de verdade
   const idxInicial = Math.max(
     TRANSICAO.findIndex((t) => t.ano === anoParam),
-    TRANSICAO.findIndex((t) => t.ano === 2026),
+    TRANSICAO.findIndex((t) => t.ano === anoHoje),
   )
   const [idx, setIdx] = useState(idxInicial)
   const ano = TRANSICAO[idx]
+  const marco = proximoMarco(hoje)
+  const progresso = progressoTransicao(hoje)
 
   const series = useMemo(
     () => [
@@ -58,12 +65,53 @@ export function LinhaDoTempo() {
                 key={t.ano}
                 role="tab"
                 aria-selected={i === idx}
-                className={`trilho-ano${i === idx ? ' on' : ''} trilho-${t.fase}`}
+                aria-label={t.ano === anoHoje ? `${t.ano} (ano atual)` : String(t.ano)}
+                className={`trilho-ano${i === idx ? ' on' : ''} trilho-${t.fase}${t.ano === anoHoje ? ' trilho-hoje' : ''}`}
                 onClick={() => selecionar(i)}
               >
                 <span className="mono">{t.ano}</span>
+                {t.ano === anoHoje && (
+                  <span className="trilho-hoje-tag" aria-hidden>
+                    hoje
+                  </span>
+                )}
               </button>
             ))}
+          </div>
+
+          <div className="agora" role="group" aria-label="Posição de hoje na transição">
+            <div className="agora-texto">
+              <p className="agora-titulo">
+                <span className="agora-pulso" aria-hidden />
+                Você está aqui: <strong>{dataLonga(hoje)}</strong>
+              </p>
+              <p className="agora-detalhe">
+                {marco ? (
+                  <>
+                    Faltam <strong className="mono">{marco.dias.toLocaleString('pt-BR')} dias</strong> para{' '}
+                    {marco.marco.rotulo} (1º de janeiro de {marco.marco.ano}).
+                  </>
+                ) : (
+                  <>O sistema pleno já está em vigor — segue apenas a transição federativa, até 2078.</>
+                )}
+              </p>
+            </div>
+            <div className="agora-progresso">
+              <div
+                className="agora-barra"
+                role="progressbar"
+                aria-valuenow={Math.round(progresso * 100)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Percentual da transição percorrido"
+              >
+                <div className="agora-barra-fill" style={{ width: `${(progresso * 100).toFixed(1)}%` }} />
+              </div>
+              <p className="agora-legenda">
+                <span className="mono">{pct(progresso, 0)}</span> da transição percorrida · EC 132 (20/12/2023) →
+                sistema pleno (1º/01/2033)
+              </p>
+            </div>
           </div>
 
           <article className="ano-painel" key={ano.ano}>

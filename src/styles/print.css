@@ -1,0 +1,170 @@
+/* ————————————————————————————————————————————————
+   Folha de impressão — "Salvar em PDF" da Calculadora e da Cesta.
+   O relatório: cabeçalho com parâmetros, resultados, gráficos e
+   premissas abertas. Sempre no tema claro, com cores exatas.
+   ———————————————————————————————————————————————— */
+
+/* o cabeçalho de relatório não existe na tela */
+.print-cab {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  /* impressão sempre no claro, mesmo se a tela estiver no escuro */
+  :root,
+  :root[data-tema='escuro'] {
+    color-scheme: light;
+
+    --bg: oklch(1 0 0);
+    --surface: oklch(0.972 0.006 210);
+    --surface-2: oklch(0.945 0.01 210);
+    --ink: oklch(0.21 0.02 220);
+    --muted: oklch(0.44 0.02 220);
+    --ink-inversa: oklch(0.97 0.008 200);
+    --muted-inversa: oklch(0.78 0.03 205);
+    --petrol: oklch(0.33 0.06 210);
+    --petrol-deep: oklch(0.24 0.045 212);
+    --petrol-bright: oklch(0.56 0.1 212);
+    --petrol-wash: oklch(0.93 0.02 205);
+    --copper: oklch(0.58 0.13 45);
+    --copper-deep: oklch(0.45 0.11 40);
+    --copper-wash: oklch(0.94 0.025 55);
+    --line: oklch(0.89 0.01 210);
+    --line-forte: oklch(0.8 0.015 210);
+    --sombra: none;
+
+    --cor-cbs: #0080a4;
+    --cor-ibs: #3cb5cd;
+    --cor-is: #6a51b8;
+    --cor-piscofins: #943310;
+    --cor-ipi: #6e2408;
+    --cor-icms: #c2622a;
+    --cor-iss: #e09257;
+
+    --mapa-b1: oklch(0.93 0.04 55);
+    --mapa-b2: oklch(0.82 0.075 50);
+    --mapa-b3: oklch(0.71 0.11 47);
+    --mapa-b4: oklch(0.55 0.125 42);
+    --mapa-b5: oklch(0.4 0.105 38);
+  }
+
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* some o chrome interativo; fica o relatório */
+  .topbar,
+  .rodape,
+  .calc-form,
+  .calc-share,
+  .viz-toggle,
+  .pagina-cab,
+  .agora,
+  .sanfona-seta {
+    display: none !important;
+  }
+
+  /* cabeçalho de relatório entra no lugar */
+  .print-cab {
+    display: block;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--petrol);
+  }
+
+  .print-cab-marca {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .print-cab-marca b {
+    font-weight: 700;
+  }
+
+  .print-cab h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+  }
+
+  .print-cab-params {
+    margin: 0 0 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 28px;
+  }
+
+  .print-cab-params div {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+  }
+
+  .print-cab-params dt {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .print-cab-params dt::after {
+    content: ':';
+  }
+
+  .print-cab-params dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .print-cab-aviso {
+    font-size: 0.75rem;
+    color: var(--muted);
+    max-width: none;
+  }
+
+  /* layout de coluna única, sem sticky */
+  .calc-layout {
+    display: block;
+    margin-top: 0;
+  }
+
+  .conteudo {
+    max-width: none;
+    padding: 0;
+  }
+
+  /* premissas sempre abertas no PDF */
+  .sanfona .sanfona-corpo {
+    display: grid !important;
+  }
+
+  .sanfona-cab {
+    cursor: default;
+  }
+
+  /* nada quebra no meio da página */
+  .viz-panel,
+  .stat-tile,
+  .callout,
+  .sanfona,
+  .dbars-row {
+    break-inside: avoid;
+  }
+
+  .page-enter {
+    animation: none;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+}

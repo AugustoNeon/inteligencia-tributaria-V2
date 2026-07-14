@@ -5,6 +5,7 @@ import { Home } from './pages/Home'
 import { Guia } from './pages/Guia'
 import { LinhaDoTempo } from './pages/LinhaDoTempo'
 import { Calculadora } from './pages/Calculadora'
+import { CestaMensal } from './pages/CestaMensal'
 import { Cashback } from './pages/Cashback'
 import { Setores } from './pages/Setores'
 import { Glossario } from './pages/Glossario'
@@ -28,6 +29,7 @@ export function App() {
           <Route path="/guia" element={<Guia />} />
           <Route path="/linha-do-tempo" element={<LinhaDoTempo />} />
           <Route path="/calculadora" element={<Calculadora />} />
+          <Route path="/cesta" element={<CestaMensal />} />
           <Route path="/cashback" element={<Cashback />} />
           <Route path="/setores" element={<Setores />} />
           <Route path="/glossario" element={<Glossario />} />

@@ -6,6 +6,7 @@ import '@fontsource-variable/spline-sans-mono'
 import './styles/tokens.css'
 import './styles/app.css'
 import './styles/pages.css'
+import './styles/print.css'
 import { App } from './App'
 
 createRoot(document.getElementById('root')!).render(

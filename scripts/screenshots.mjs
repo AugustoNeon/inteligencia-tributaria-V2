@@ -29,6 +29,7 @@ const BASE = 'http://localhost:5173'
 const SHOTS = [
   { arquivo: 'inicio.png', url: `${BASE}/#/`, tema: 'claro', espera: 2600 },
   { arquivo: 'calculadora.png', url: `${BASE}/#/calculadora?preco=1000&cat=produto-padrao&ano=2033&uf=SP`, tema: 'claro', espera: 1400 },
+  { arquivo: 'cesta.png', url: `${BASE}/#/cesta`, tema: 'claro', espera: 1400 },
   { arquivo: 'linha-do-tempo.png', url: `${BASE}/#/linha-do-tempo?ano=2029`, tema: 'claro', espera: 1400 },
   { arquivo: 'setores.png', url: `${BASE}/#/setores`, tema: 'claro', espera: 1400 },
   { arquivo: 'inicio-escuro.png', url: `${BASE}/#/`, tema: 'escuro', espera: 2600 },

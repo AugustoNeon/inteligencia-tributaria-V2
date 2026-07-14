@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CabecalhoPagina } from '../components/layout/Shell'
 import { CompareBars } from '../components/charts/CompareBars'
+import { MapaBrasil } from '../components/charts/MapaBrasil'
 import { VizPanel } from '../components/charts/VizPanel'
-import { Callout, Campo, EntradaNumero, Sanfona, Segmentado, StatTile } from '../components/ui/kit'
+import { BotaoPdf, Callout, Campo, EntradaNumero, RelatorioImpresso, Sanfona, Segmentado, StatTile } from '../components/ui/kit'
 import { CATEGORIAS, CATEGORIA_PADRAO } from '../data/categorias'
 import { ICMS_UF, UF_PADRAO, icmsDaUf } from '../data/icmsUf'
 import { ANOS_SIMULAVEIS } from '../data/transicao'
@@ -141,15 +142,22 @@ export function Calculadora() {
             <p className="calc-cat-ref mono">{categoria.refLegal}</p>
 
             {categoria.icmsModal && (
-              <Campo label="Estado da operação" sufixo="ICMS" dica="Alíquota modal interna de referência (2025) — ajuste fino em Ajustes avançados">
-                <select value={uf} onChange={(e) => trocarUf(e.target.value)}>
-                  {ICMS_UF.map((u) => (
-                    <option key={u.uf} value={u.uf}>
-                      {u.uf} — {u.nome} ({(u.aliquota * 100).toLocaleString('pt-BR')}%)
-                    </option>
-                  ))}
-                </select>
-              </Campo>
+              <>
+                <Campo label="Estado da operação" sufixo="ICMS" dica="Alíquota modal interna de referência (2025) — ajuste fino em Ajustes avançados">
+                  <select value={uf} onChange={(e) => trocarUf(e.target.value)}>
+                    {ICMS_UF.map((u) => (
+                      <option key={u.uf} value={u.uf}>
+                        {u.uf} — {u.nome} ({(u.aliquota * 100).toLocaleString('pt-BR')}%)
+                      </option>
+                    ))}
+                  </select>
+                </Campo>
+                <MapaBrasil
+                  valores={Object.fromEntries(ICMS_UF.map((u) => [u.uf, u.aliquota]))}
+                  selecionado={uf}
+                  onSelecionar={trocarUf}
+                />
+              </>
             )}
 
             <Campo label="Ano da simulação">
@@ -195,7 +203,17 @@ export function Calculadora() {
           </aside>
 
           <div className="calc-resultado">
+            <RelatorioImpresso
+              titulo="Simulação comparativa — quanto custa hoje, quanto vai custar"
+              parametros={[
+                { rotulo: 'Preço de hoje', valor: brl(preco) },
+                { rotulo: 'Categoria', valor: categoria.rotulo },
+                ...(categoria.icmsModal ? [{ rotulo: 'Estado', valor: uf }] : []),
+                { rotulo: 'Ano simulado', valor: String(ano) },
+              ]}
+            />
             <div className="calc-share">
+              <BotaoPdf />
               <button className={`botao-acao${copiado ? ' feito' : ''}`} onClick={copiarLink}>
                 {copiado ? '✓ Link copiado' : 'Copiar link da simulação'}
               </button>

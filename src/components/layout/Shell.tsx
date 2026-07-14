@@ -6,6 +6,7 @@ const NAV = [
   { para: '/guia', rotulo: 'Guia' },
   { para: '/linha-do-tempo', rotulo: 'Linha do tempo' },
   { para: '/calculadora', rotulo: 'Calculadora' },
+  { para: '/cesta', rotulo: 'Minha cesta' },
   { para: '/cashback', rotulo: 'Cashback' },
   { para: '/setores', rotulo: 'Setores' },
   { para: '/glossario', rotulo: 'Glossário e fontes' },

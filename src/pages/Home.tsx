@@ -75,6 +75,11 @@ const FERRAMENTAS = [
     desc: 'Quanto custa hoje × quanto custará: simule produtos e serviços em qualquer ano.',
   },
   {
+    para: '/cesta',
+    titulo: 'Minha cesta mensal',
+    desc: 'O orçamento da família inteiro, hoje × novo sistema — categoria por categoria.',
+  },
+  {
     para: '/cashback',
     titulo: 'Simulador de cashback',
     desc: 'A devolução de imposto para famílias do CadÚnico, conta por conta.',

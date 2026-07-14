@@ -119,7 +119,10 @@ export function Sanfona({ titulo, children, abertoInicial = false }: { titulo: s
           ▾
         </span>
       </button>
-      {aberto && <div className="sanfona-corpo">{children}</div>}
+      {/* corpo sempre no DOM (escondido via [hidden]) — a folha de impressão o revela no PDF */}
+      <div className="sanfona-corpo" hidden={!aberto}>
+        {children}
+      </div>
     </div>
   )
 }
@@ -127,4 +130,44 @@ export function Sanfona({ titulo, children, abertoInicial = false }: { titulo: s
 /** Selo pequeno (fase da transição, esfera do tributo…). */
 export function Selo({ children, tom = 'neutro' }: { children: ReactNode; tom?: 'neutro' | 'novo' | 'antigo' | 'destaque' }) {
   return <span className={`selo selo-${tom}`}>{children}</span>
+}
+
+/**
+ * Cabeçalho de relatório — invisível na tela, vira a primeira dobra do PDF
+ * quando o usuário exporta a simulação (styles/print.css).
+ */
+export function RelatorioImpresso({ titulo, parametros }: { titulo: string; parametros: { rotulo: string; valor: string }[] }) {
+  return (
+    <header className="print-cab" aria-hidden>
+      <p className="print-cab-marca">
+        Inteligência<b>Tributária</b> · augustoneon.github.io/inteligencia-tributaria-V2
+      </p>
+      <h1>{titulo}</h1>
+      <dl className="print-cab-params">
+        {parametros.map((p) => (
+          <div key={p.rotulo}>
+            <dt>{p.rotulo}</dt>
+            <dd>{p.valor}</dd>
+          </div>
+        ))}
+        <div>
+          <dt>Gerado em</dt>
+          <dd>{new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</dd>
+        </div>
+      </dl>
+      <p className="print-cab-aviso">
+        Estimativa didática baseada na EC 132/2023 e na LC 214/2025 — premissas na seção "Como calculamos". Não
+        substitui orientação contábil ou jurídica.
+      </p>
+    </header>
+  )
+}
+
+/** Botão "Salvar em PDF" — abre o diálogo de impressão com a folha dedicada. */
+export function BotaoPdf() {
+  return (
+    <button className="botao-acao" onClick={() => window.print()}>
+      Salvar em PDF
+    </button>
+  )
 }

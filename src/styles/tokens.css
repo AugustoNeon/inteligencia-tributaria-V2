@@ -40,6 +40,13 @@
   --cor-icms: #c2622a;
   --cor-iss: #e09257;
 
+  /* escala sequencial do mapa de ICMS (família cobre = sistema antigo) */
+  --mapa-b1: oklch(0.93 0.04 55);
+  --mapa-b2: oklch(0.82 0.075 50);
+  --mapa-b3: oklch(0.71 0.11 47);
+  --mapa-b4: oklch(0.55 0.125 42);
+  --mapa-b5: oklch(0.4 0.105 38);
+
   /* tipografia */
   --font-display: 'Archivo Black', 'Archivo Variable', system-ui, sans-serif;
   --font-ui: 'Archivo Variable', system-ui, sans-serif;
@@ -93,4 +100,11 @@
   --cor-ipi: #7e3418;
   --cor-icms: #c05f2b;
   --cor-iss: #bd8a2b;
+
+  /* escala do mapa reencaixada na superfície escura (escuro → cobre vivo) */
+  --mapa-b1: oklch(0.3 0.035 50);
+  --mapa-b2: oklch(0.4 0.06 46);
+  --mapa-b3: oklch(0.5 0.09 45);
+  --mapa-b4: oklch(0.61 0.115 47);
+  --mapa-b5: oklch(0.73 0.13 55);
 }
