@@ -56,7 +56,7 @@ npm run build    # type-check + build de produção em dist/
 - [Emenda Constitucional nº 132/2023](https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc132.htm) — cria IBS, CBS e Imposto Seletivo
 - [Lei Complementar nº 214/2025](https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm) — regulamentação geral (alíquotas, regimes, cashback, split payment)
 - [PLP 108/2024](https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=2374064) — Comitê Gestor do IBS
-- [Portal da Reforma Tributária — Ministério da Fazenda](https://www.gov.br/fazenda/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria)
+- [Programa da Reforma Tributária do Consumo — Receita Federal](https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo)
 
 Alíquota de referência usada nas simulações: **26,5%** (CBS 8,8% + IBS 17,7%) — estimativa oficial do Ministério da Fazenda, com trava legal na LC 214/2025.
 

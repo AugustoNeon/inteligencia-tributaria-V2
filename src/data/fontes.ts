@@ -36,11 +36,12 @@ export const FONTES: Fonte[] = [
   },
   {
     id: 'portal-fazenda',
-    titulo: 'Portal da Reforma Tributária',
-    orgao: 'Ministério da Fazenda',
+    titulo: 'Programa da Reforma Tributária do Consumo',
+    orgao: 'Receita Federal',
     tipo: 'Portal',
-    url: 'https://www.gov.br/fazenda/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria',
-    descricao: 'Página oficial do governo com notas técnicas (inclusive da alíquota de referência), perguntas e respostas e materiais de divulgação.',
+    // a página anterior (gov.br/fazenda) passou a exigir login; esta é a página pública do programa
+    url: 'https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo',
+    descricao: 'Página oficial do programa: legislação, documentos técnicos, perguntas e respostas e orientações de implantação para 2026.',
   },
   {
     id: 'constituicao',
