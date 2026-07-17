@@ -66,6 +66,8 @@
   .pagina-cab,
   .agora,
   .regime-secao,
+  .chat-fab,
+  .chat-painel,
   .sanfona-seta {
     display: none !important;
   }

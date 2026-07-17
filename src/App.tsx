@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { HashRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { Rodape, TopNav } from './components/layout/Shell'
+import { ChatIA, chatDisponivel } from './components/ChatIA'
 import { Home } from './pages/Home'
 import { Guia } from './pages/Guia'
 import { LinhaDoTempo } from './pages/LinhaDoTempo'
@@ -10,6 +11,7 @@ import { Cashback } from './pages/Cashback'
 import { Painel } from './pages/Painel'
 import { Setores } from './pages/Setores'
 import { Glossario } from './pages/Glossario'
+import { AdminIA } from './pages/AdminIA'
 
 function AoTrocarDeRota() {
   const { pathname } = useLocation()
@@ -35,10 +37,13 @@ export function App() {
           <Route path="/raio-x" element={<Painel />} />
           <Route path="/setores" element={<Setores />} />
           <Route path="/glossario" element={<Glossario />} />
+          <Route path="/admin-ia" element={<AdminIA />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </main>
       <Rodape />
+      {/* fora das rotas: a conversa sobrevive à navegação entre páginas */}
+      {chatDisponivel() && <ChatIA />}
     </HashRouter>
   )
 }

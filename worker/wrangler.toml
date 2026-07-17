@@ -1,0 +1,16 @@
+# Worker do assistente de IA — deploy: npx wrangler deploy (a partir de worker/)
+name = "ia-tributaria"
+main = "index.ts"
+compatibility_date = "2026-07-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Secrets (via `npx wrangler secret put`, nunca no repositório):
+#   ANTHROPIC_API_KEY — chave da API da Anthropic
+#   ADMIN_SENHA       — senha do interruptor liga/desliga
+
+[[kv_namespaces]]
+binding = "IA_KV"
+id = "ee7b45471d6d495eaaf627bbc8dc4de0"
+
+[observability]
+enabled = true

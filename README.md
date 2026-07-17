@@ -30,6 +30,7 @@
 | **Minha cesta** | O orçamento mensal da família inteiro: **perfis de um toque** (essencial / familiar / ampla) ou gastos manuais em 8 categorias, efeito agregado (hoje × qualquer ano) com barras divergentes — compartilhável, exportável em PDF e **em CSV** |
 | **Cashback** | Simula a devolução de CBS/IBS para famílias do CadÚnico: teste de elegibilidade, devolução por conta (energia, água, gás, telecom) e projeção anual |
 | **Raio-X** | Cesta + cashback num retrato só do sistema pleno (2033): efeito líquido no orçamento da família e a **curva de progressividade** — carga de consumo por faixa de renda, antes e depois do cashback |
+| **Assistente de IA** | Chat flutuante que responde sobre a reforma a partir do conteúdo do próprio site — e, em perguntas de preço, **preenche a Calculadora na tela** em vez de calcular de cabeça: quem faz a conta é sempre o motor determinístico testado |
 | **Setores** | Slope chart de quem tende a pagar mais ou menos no sistema pleno, com a premissa de cada estimativa |
 | **Glossário e fontes** | 20+ termos pesquisáveis (com busca sem acento) e a biblioteca de documentos oficiais |
 
@@ -45,6 +46,7 @@
 - **Simulações compartilháveis**: o estado da calculadora, da cesta, do cashback e do raio-X vira query string — no celular abre a folha nativa de compartilhamento (`navigator.share`), no desktop copia o link para mandar ao contador. A cesta também exporta **CSV pt-BR** (separador `;`, vírgula decimal, BOM p/ Excel) sem dependência.
 - **Instalável (PWA)**: manifest + service worker próprios — rede primeiro nas páginas (conteúdo sempre fresco, fallback offline), cache primeiro nos assets imutáveis do Vite; ícones gerados por script a partir da arte do favicon (`scripts/gera-icones.mjs`).
 - **Radar da reforma**: os marcos da regulamentação (EC 132 → LC 214/2025 → LC 227/2026) verificados e datados na página inicial, cada um com link para o texto oficial.
+- **IA com fronteira explícita**: o assistente (Claude Haiku via um Worker mínimo na Cloudflare que guarda a chave) recebe como contexto os **mesmos arquivos de dados do site** (`src/ia/briefing.ts` — uma fonte de verdade só) e **nunca calcula valores**: perguntas de preço viram uma chamada de ferramenta que preenche a Calculadora real e devolve o resultado do `engine.ts`. Governança de custo: interruptor liga/desliga com auto-expiração (Cloudflare KV + TTL), limite por visitante, teto global diário e cache de prompt (~90% de economia na entrada). Desligada, o worker nem chama a API — custo zero.
 - **Relatório em PDF sem biblioteca**: uma folha de impressão dedicada (`styles/print.css`) transforma a simulação num relatório — cabeçalho com parâmetros e data, premissas abertas automaticamente, sempre no tema claro com cores exatas — via `window.print()`.
 - **HashRouter + base relativa** para funcionar no GitHub Pages sem configuração de servidor; deploy automático via GitHub Actions.
 - Contraste AAA no texto (corpo 17,6:1; secundário 7,7:1), `prefers-reduced-motion` respeitado, gráficos com `role="img"` e `aria-label`.
@@ -73,6 +75,7 @@ Alíquota de referência usada nas simulações: **26,5%** (CBS 8,8% + IBS 17,7%
 src/
 ├── data/        # conteúdo da reforma: transição, categorias, cesta (+ perfis), cashback, faixas de renda, novidades, setores, glossário, fontes, malha do Brasil
 ├── lib/         # motores de cálculo (comparativo, cesta mensal, cashback, regimes do vendedor, raio-X, progressividade), posição temporal e formatação pt-BR
+├── ia/          # assistente: briefing (system prompt gerado dos dados), ferramentas (preenchem a Calculadora), cliente do chat
 ├── components/
 │   ├── charts/  # kit de gráficos SVG próprio (área, barras, donut, slope, mapa do Brasil, moldura c/ tabela)
 │   ├── ui/      # tiles, callouts, campos, sanfona, chips, links de fonte, relatório impresso

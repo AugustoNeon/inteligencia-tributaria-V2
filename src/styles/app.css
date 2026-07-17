@@ -530,6 +530,199 @@ select {
   white-space: nowrap;
 }
 
+/* ============ assistente de IA (chat flutuante) ============ */
+.chat-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 60;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--petrol);
+  color: var(--ink-inversa);
+  border: 1px solid var(--petrol);
+  box-shadow: 0 6px 24px oklch(0.25 0.04 220 / 0.35);
+  transition: transform 150ms var(--saida, ease-out);
+}
+
+.chat-fab:hover {
+  transform: translateY(-2px);
+}
+
+.chat-painel {
+  position: fixed;
+  right: 20px;
+  bottom: 84px;
+  z-index: 60;
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(560px, calc(100vh - 120px));
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--line-forte);
+  border-radius: var(--raio);
+  box-shadow: 0 12px 40px oklch(0.25 0.04 220 / 0.28);
+  overflow: hidden;
+}
+
+.chat-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--petrol);
+  color: var(--ink-inversa);
+}
+
+.chat-titulo {
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.chat-selo {
+  font-size: 0.6875rem;
+  opacity: 0.85;
+}
+
+.chat-demo {
+  padding: 10px 16px;
+  font-size: 0.8125rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.chat-demo strong {
+  color: var(--ink);
+}
+
+.chat-msgs {
+  flex: 1;
+  min-height: 180px;
+  overflow-y: auto;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-vazio {
+  display: grid;
+  gap: 12px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.chat-sugestoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chat-msg {
+  max-width: 86%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.chat-msg-user {
+  align-self: flex-end;
+  background: var(--petrol);
+  color: var(--ink-inversa);
+  border-bottom-right-radius: 4px;
+}
+
+.chat-msg-ia {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+}
+
+.chat-tool {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  color: var(--petrol-bright);
+}
+
+.chat-pensando {
+  align-self: flex-start;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.chat-erro {
+  font-size: 0.8125rem;
+  color: var(--cor-icms);
+}
+
+.chat-form {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.chat-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-disclaimer {
+  padding: 8px 16px 12px;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* ============ admin da IA ============ */
+.admin-ia {
+  max-width: 480px;
+  display: grid;
+  gap: 18px;
+}
+
+.admin-estado {
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.admin-estado strong {
+  color: var(--ink);
+}
+
+.admin-acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-aviso {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .chat-painel {
+    right: 16px;
+    bottom: 80px;
+  }
+
+  .chat-fab {
+    right: 16px;
+    bottom: 16px;
+  }
+}
+
 .selo-neutro {
   background: var(--surface-2);
   color: var(--muted);
