@@ -3,8 +3,9 @@ import { useSearchParams } from 'react-router-dom'
 import { CabecalhoPagina } from '../components/layout/Shell'
 import { CompareBars } from '../components/charts/CompareBars'
 import { MapaBrasil } from '../components/charts/MapaBrasil'
+import { RegimeVendedor } from '../components/RegimeVendedor'
 import { VizPanel } from '../components/charts/VizPanel'
-import { BotaoPdf, Callout, Campo, EntradaNumero, RelatorioImpresso, Sanfona, Segmentado, StatTile } from '../components/ui/kit'
+import { BotaoCompartilhar, BotaoPdf, Callout, Campo, EntradaNumero, RelatorioImpresso, Sanfona, Segmentado, StatTile, useCompartilharLink } from '../components/ui/kit'
 import { CATEGORIAS, CATEGORIA_PADRAO } from '../data/categorias'
 import { ICMS_UF, UF_PADRAO, icmsDaUf } from '../data/icmsUf'
 import { ANOS_SIMULAVEIS } from '../data/transicao'
@@ -13,6 +14,15 @@ import { brl, pct, pctDelta } from '../lib/format'
 import { CORES } from '../data/tributos'
 
 const GRUPOS = ['Produtos', 'Serviços', 'Regimes favorecidos'] as const
+
+/** Exemplos de um toque — preenchem preço, categoria e estado de uma vez. */
+const EXEMPLOS = [
+  { rotulo: 'Tênis de R$ 300', preco: 300, cat: 'produto-padrao' },
+  { rotulo: 'Feira do mês R$ 600', preco: 600, cat: 'cesta-basica' },
+  { rotulo: 'Consulta de R$ 250', preco: 250, cat: 'saude' },
+  { rotulo: 'Escola de R$ 800', preco: 800, cat: 'educacao' },
+  { rotulo: 'Academia de R$ 130', preco: 130, cat: 'servico-padrao' },
+]
 
 export function Calculadora() {
   // estado inicial pode vir da URL — links de simulação compartilháveis
@@ -39,7 +49,7 @@ export function Calculadora() {
     const v = params.get('iss')
     return v !== null && Number.isFinite(Number(v)) ? Number(v) : null
   })
-  const [copiado, setCopiado] = useState(false)
+  const { copiado, compartilhar } = useCompartilharLink()
 
   // colar um link compartilhado com a página já aberta também re-sincroniza o formulário
   useEffect(() => {
@@ -85,19 +95,18 @@ export function Calculadora() {
     setIcmsPct(null)
   }
 
-  const copiarLink = async () => {
+  const aplicarExemplo = (e: (typeof EXEMPLOS)[number]) => {
+    setPreco(e.preco)
+    trocarCategoria(e.cat)
+  }
+
+  const compartilharLink = () => {
     const q = new URLSearchParams({ preco: String(preco), cat: catId, ano: String(ano) })
     if (categoria.icmsModal) q.set('uf', uf)
     if (icmsPct !== null) q.set('icms', String(icmsPct))
     if (issPct !== null) q.set('iss', String(issPct))
     setParams(q, { replace: true })
-    try {
-      await navigator.clipboard.writeText(`${location.origin}${location.pathname}#/calculadora?${q.toString()}`)
-      setCopiado(true)
-      window.setTimeout(() => setCopiado(false), 2200)
-    } catch {
-      // sem permissão de clipboard: a URL já está na barra de endereço
-    }
+    void compartilhar(`${location.origin}${location.pathname}#/calculadora?${q.toString()}`)
   }
 
   const legenda = [
@@ -121,6 +130,18 @@ export function Calculadora() {
       <div className="conteudo">
         <div className="calc-layout">
           <aside className="calc-form">
+            <div className="chips" role="group" aria-label="Exemplos rápidos">
+              {EXEMPLOS.map((e) => (
+                <button
+                  key={e.rotulo}
+                  className={`chip${preco === e.preco && catId === e.cat ? ' on' : ''}`}
+                  onClick={() => aplicarExemplo(e)}
+                >
+                  {e.rotulo}
+                </button>
+              ))}
+            </div>
+
             <Campo label="Preço de hoje" sufixo="com impostos">
               <EntradaNumero valor={preco} onMudar={setPreco} min={0} passo={50} prefixo="R$" />
             </Campo>
@@ -214,9 +235,7 @@ export function Calculadora() {
             />
             <div className="calc-share">
               <BotaoPdf />
-              <button className={`botao-acao${copiado ? ' feito' : ''}`} onClick={copiarLink}>
-                {copiado ? '✓ Link copiado' : 'Copiar link da simulação'}
-              </button>
+              <BotaoCompartilhar copiado={copiado} onCompartilhar={compartilharLink} />
             </div>
             <div className="calc-tiles">
               <StatTile
@@ -316,6 +335,16 @@ export function Calculadora() {
             )}
           </div>
         </div>
+
+        <section className="secao regime-secao">
+          <h2>Para quem vende: dentro ou fora do IVA?</h2>
+          <p className="secao-desc">
+            A calculadora acima olha o preço ao consumidor. Aqui, o outro lado do balcão: informe a receita anual do
+            negócio e veja em quais regimes ele cabe — de ficar totalmente fora do IVA (nanoempreendedor, produtor
+            rural) a recolher CBS/IBS "por fora" do Simples para transferir crédito cheio a clientes empresas.
+          </p>
+          <RegimeVendedor aliquotaIva={r.aliquotaIvaEfetiva} categoriaRotulo={categoria.rotulo} />
+        </section>
       </div>
     </div>
   )

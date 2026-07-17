@@ -3,11 +3,11 @@ import { useSearchParams } from 'react-router-dom'
 import { CabecalhoPagina } from '../components/layout/Shell'
 import { CompareBars } from '../components/charts/CompareBars'
 import { VizPanel } from '../components/charts/VizPanel'
-import { BotaoPdf, Callout, Campo, EntradaNumero, RelatorioImpresso, Sanfona, Segmentado, StatTile } from '../components/ui/kit'
-import { CESTA_PADRAO } from '../data/cesta'
+import { BotaoCompartilhar, BotaoPdf, Callout, Campo, EntradaNumero, RelatorioImpresso, Sanfona, Segmentado, StatTile, useCompartilharLink } from '../components/ui/kit'
+import { CESTA_PADRAO, PERFIS_CESTA } from '../data/cesta'
 import { ICMS_UF, UF_PADRAO } from '../data/icmsUf'
 import { ANOS_SIMULAVEIS } from '../data/transicao'
-import { cestaInicial, simularCesta, type LinhaCesta } from '../lib/cesta-mensal'
+import { cestaInicial, csvDaCesta, simularCesta, type LinhaCesta } from '../lib/cesta-mensal'
 import { brl, pct, pctDelta } from '../lib/format'
 
 /** −12,34 → "−R$ 12,34" · 12,34 → "+R$ 12,34" */
@@ -29,7 +29,7 @@ export function CestaMensal() {
     const a = Number(params.get('ano'))
     return ANOS_SIMULAVEIS.includes(a) ? a : 2033
   })
-  const [copiado, setCopiado] = useState(false)
+  const { copiado, compartilhar } = useCompartilharLink()
 
   const r = useMemo(() => simularCesta(itens, uf, ano), [itens, uf, ano])
   const orcamento = itens.reduce((s, i) => s + (Number.isFinite(i.valor) ? i.valor : 0), 0)
@@ -38,17 +38,28 @@ export function CestaMensal() {
   const mudarItem = (categoriaId: string, valor: number) =>
     setItens((atual) => atual.map((i) => (i.categoriaId === categoriaId ? { ...i, valor } : i)))
 
-  const copiarLink = async () => {
+  const aplicarPerfil = (id: string) => {
+    const perfil = PERFIS_CESTA.find((p) => p.id === id)!
+    setItens((atual) => atual.map((i) => ({ ...i, valor: perfil.valores[i.categoriaId] ?? 0 })))
+  }
+
+  const perfilAtivo = PERFIS_CESTA.find((p) => itens.every((i) => i.valor === (p.valores[i.categoriaId] ?? 0)))?.id
+
+  const compartilharLink = () => {
     const q = new URLSearchParams({ uf, ano: String(ano) })
     for (const item of itens) q.set(item.categoriaId, String(item.valor))
     setParams(q, { replace: true })
-    try {
-      await navigator.clipboard.writeText(`${location.origin}${location.pathname}#/cesta?${q.toString()}`)
-      setCopiado(true)
-      window.setTimeout(() => setCopiado(false), 2200)
-    } catch {
-      // sem permissão de clipboard: a URL já está na barra de endereço
-    }
+    void compartilhar(`${location.origin}${location.pathname}#/cesta?${q.toString()}`)
+  }
+
+  const baixarCsv = () => {
+    // BOM p/ o Excel pt-BR reconhecer o UTF-8
+    const blob = new Blob(['\ufeff' + csvDaCesta(r, ano)], { type: 'text/csv;charset=utf-8' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `cesta-mensal-${uf}-${ano}.csv`
+    a.click()
+    URL.revokeObjectURL(a.href)
   }
 
   const legenda = [
@@ -72,6 +83,20 @@ export function CestaMensal() {
       <div className="conteudo">
         <div className="calc-layout">
           <aside className="calc-form">
+            <p className="form-titulo">Comece por um perfil</p>
+            <div className="chips" role="group" aria-label="Perfis de orçamento">
+              {PERFIS_CESTA.map((p) => (
+                <button
+                  key={p.id}
+                  className={`chip${perfilAtivo === p.id ? ' on' : ''}`}
+                  title={p.descricao}
+                  onClick={() => aplicarPerfil(p.id)}
+                >
+                  {p.rotulo}
+                </button>
+              ))}
+            </div>
+
             <p className="form-titulo">Gastos do mês</p>
             {itens.map((item) => {
               const padrao = CESTA_PADRAO.find((c) => c.categoriaId === item.categoriaId)!
@@ -126,9 +151,10 @@ export function CestaMensal() {
                 />
                 <div className="calc-share">
                   <BotaoPdf />
-                  <button className={`botao-acao${copiado ? ' feito' : ''}`} onClick={copiarLink}>
-                    {copiado ? '✓ Link copiado' : 'Copiar link da simulação'}
+                  <button className="botao-acao" onClick={baixarCsv}>
+                    Baixar CSV
                   </button>
+                  <BotaoCompartilhar copiado={copiado} onCompartilhar={compartilharLink} />
                 </div>
 
                 <div className="calc-tiles">

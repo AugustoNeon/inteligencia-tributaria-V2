@@ -14,3 +14,12 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// PWA: registro relativo funciona no GitHub Pages (subpasta) e em domínio próprio
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
+      // sem service worker o site continua funcionando normalmente
+    })
+  })
+}

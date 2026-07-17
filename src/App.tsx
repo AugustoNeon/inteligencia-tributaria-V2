@@ -7,6 +7,7 @@ import { LinhaDoTempo } from './pages/LinhaDoTempo'
 import { Calculadora } from './pages/Calculadora'
 import { CestaMensal } from './pages/CestaMensal'
 import { Cashback } from './pages/Cashback'
+import { Painel } from './pages/Painel'
 import { Setores } from './pages/Setores'
 import { Glossario } from './pages/Glossario'
 
@@ -31,6 +32,7 @@ export function App() {
           <Route path="/calculadora" element={<Calculadora />} />
           <Route path="/cesta" element={<CestaMensal />} />
           <Route path="/cashback" element={<Cashback />} />
+          <Route path="/raio-x" element={<Painel />} />
           <Route path="/setores" element={<Setores />} />
           <Route path="/glossario" element={<Glossario />} />
           <Route path="*" element={<Home />} />

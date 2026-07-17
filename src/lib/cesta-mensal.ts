@@ -98,3 +98,15 @@ export function simularCesta(itens: ItemCestaValor[], uf: string, ano: number): 
 /** Cesta padrão como estado inicial da página. */
 export const cestaInicial = (): ItemCestaValor[] =>
   CESTA_PADRAO.map((i) => ({ categoriaId: i.categoriaId, rotulo: i.rotulo, valor: i.valorPadrao }))
+
+/** CSV pt-BR da simulação (separador ; e vírgula decimal) — abre direto no Excel. */
+export function csvDaCesta(r: ResultadoCesta, ano: number): string {
+  const num = (v: number) => v.toFixed(2).replace('.', ',')
+  const linhas = [
+    ['Categoria', 'Hoje (R$)', `Em ${ano} (R$)`, 'Diferença/mês (R$)'],
+    ...r.linhas.map((l) => [l.rotulo, num(l.hoje), num(l.novo), num(l.delta)]),
+    ['Total', num(r.hoje.precoFinal), num(r.novo.precoFinal), num(r.deltaMensal)],
+    ['Efeito em 12 meses', '', '', num(r.deltaAnual)],
+  ]
+  return linhas.map((l) => l.join(';')).join('\r\n')
+}

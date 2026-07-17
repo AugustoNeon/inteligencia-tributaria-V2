@@ -171,3 +171,42 @@ export function BotaoPdf() {
     </button>
   )
 }
+
+/**
+ * Compartilhar uma simulação: Web Share nativo quando o aparelho tem
+ * (celulares), senão copia o link — com o mesmo feedback visual de antes.
+ */
+export function useCompartilharLink() {
+  const [copiado, setCopiado] = useState(false)
+
+  const compartilhar = async (url: string) => {
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: 'Inteligência Tributária', url })
+        return
+      } catch (e) {
+        // usuário fechou a folha de compartilhamento: não é erro
+        if (e instanceof Error && e.name === 'AbortError') return
+        // share indisponível de fato (ex.: desktop sem suporte): cai p/ o clipboard
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopiado(true)
+      window.setTimeout(() => setCopiado(false), 2200)
+    } catch {
+      // sem permissão de clipboard: a URL já está na barra de endereço
+    }
+  }
+
+  return { copiado, compartilhar }
+}
+
+/** Botão de compartilhar simulação — par do useCompartilharLink. */
+export function BotaoCompartilhar({ copiado, onCompartilhar }: { copiado: boolean; onCompartilhar: () => void }) {
+  return (
+    <button className={`botao-acao${copiado ? ' feito' : ''}`} onClick={onCompartilhar}>
+      {copiado ? '✓ Link copiado' : 'Compartilhar simulação'}
+    </button>
+  )
+}

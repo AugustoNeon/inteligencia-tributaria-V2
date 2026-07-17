@@ -104,6 +104,75 @@ const FAQ = [
   },
 ]
 
+/**
+ * Split payment em um desenho: uma compra de R$ 1.000 + IVA de 26,5%.
+ * Na liquidação do pagamento, a fatia do imposto segue direto ao fisco.
+ */
+function SplitPaymentFluxo() {
+  return (
+    <div className="split-wrap">
+      <svg
+        viewBox="0 0 720 240"
+        className="split-svg"
+        role="img"
+        aria-label="Fluxo do split payment: o consumidor paga R$ 1.265; na liquidação do pagamento, R$ 265 de CBS e IBS vão direto ao fisco e R$ 1.000 chegam ao vendedor"
+      >
+        {/* fluxos */}
+        <path d="M162,121 L283,121" className="split-fluxo split-fluxo-total" />
+        <path d="M437,110 C 500,110 500,56 558,56" className="split-fluxo split-fluxo-fisco" />
+        <path d="M437,132 C 500,132 500,184 558,184" className="split-fluxo split-fluxo-vendedor" />
+        <text x={497} y={70} textAnchor="middle" className="split-fluxo-rotulo split-fluxo-rotulo-fisco">
+          na hora
+        </text>
+
+        {/* consumidor */}
+        <g>
+          <rect x={10} y={95} width={152} height={52} rx={8} className="split-caixa" />
+          <text x={86} y={116} textAnchor="middle" className="split-nome">
+            Consumidor paga
+          </text>
+          <text x={86} y={135} textAnchor="middle" className="split-valor">
+            R$ 1.265,00
+          </text>
+        </g>
+
+        {/* liquidação */}
+        <g>
+          <rect x={285} y={95} width={152} height={52} rx={8} className="split-caixa" />
+          <text x={361} y={116} textAnchor="middle" className="split-nome">
+            Liquidação
+          </text>
+          <text x={361} y={134} textAnchor="middle" className="split-detalhe">
+            cartão · Pix · boleto
+          </text>
+        </g>
+
+        {/* fisco */}
+        <g>
+          <rect x={560} y={30} width={152} height={52} rx={8} className="split-caixa split-caixa-fisco" />
+          <text x={636} y={51} textAnchor="middle" className="split-nome split-nome-fisco">
+            Fisco — CBS + IBS
+          </text>
+          <text x={636} y={70} textAnchor="middle" className="split-valor split-valor-fisco">
+            R$ 265,00
+          </text>
+        </g>
+
+        {/* vendedor */}
+        <g>
+          <rect x={560} y={158} width={152} height={52} rx={8} className="split-caixa" />
+          <text x={636} y={179} textAnchor="middle" className="split-nome">
+            Vendedor recebe
+          </text>
+          <text x={636} y={198} textAnchor="middle" className="split-valor">
+            R$ 1.000,00
+          </text>
+        </g>
+      </svg>
+    </div>
+  )
+}
+
 export function Guia() {
   return (
     <div className="page-enter">
@@ -181,6 +250,20 @@ export function Guia() {
         </section>
 
         <section className="secao">
+          <h2>O split payment, visto de perto</h2>
+          <p className="secao-desc">
+            Uma compra de R$ 1.000 + IVA de 26,5%: na hora em que o pagamento é liquidado, a fatia do imposto se separa
+            do dinheiro do vendedor e segue direto ao fisco — sem guia, sem prazo, sem depender de boa vontade.
+          </p>
+          <SplitPaymentFluxo />
+          <p className="split-nota">
+            Hoje o vendedor recebe o valor cheio e recolhe o tributo semanas depois; é nesse intervalo que vivem a
+            inadimplência e parte da sonegação. Com o split, elas deixam de ser possíveis por construção. A implantação
+            será gradual, começando pelos pagamentos eletrônicos.
+          </p>
+        </section>
+
+        <section className="secao">
           <h2>Nem tudo paga 26,5%</h2>
           <p className="secao-desc">
             A LC 214/2025 criou uma escada de alíquotas. Cada degrau tem lista taxativa — na dúvida, consulte os anexos
@@ -227,7 +310,7 @@ export function Guia() {
           <div className="fontes-grade">
             <SourceLink fonte={fonte('ec-132')} />
             <SourceLink fonte={fonte('lc-214')} />
-            <SourceLink fonte={fonte('plp-108')} />
+            <SourceLink fonte={fonte('lc-227')} />
             <SourceLink fonte={fonte('portal-fazenda')} />
             <SourceLink fonte={fonte('constituicao')} />
             <SourceLink fonte={fonte('lc-123')} />

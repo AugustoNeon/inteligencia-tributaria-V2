@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
 import { StackedArea } from '../components/charts/StackedArea'
 import { VizPanel } from '../components/charts/VizPanel'
-import { SourceLink } from '../components/ui/kit'
+import { Selo, SourceLink } from '../components/ui/kit'
 import { CORES } from '../data/tributos'
+import { NOVIDADES, RADAR_VERIFICADO_EM } from '../data/novidades'
 import { TRANSICAO } from '../data/transicao'
 import { fonte } from '../data/fontes'
 
@@ -83,6 +84,11 @@ const FERRAMENTAS = [
     para: '/cashback',
     titulo: 'Simulador de cashback',
     desc: 'A devolução de imposto para famílias do CadÚnico, conta por conta.',
+  },
+  {
+    para: '/raio-x',
+    titulo: 'Raio-X da família',
+    desc: 'Cesta + cashback num retrato só: o efeito líquido do sistema pleno no orçamento.',
   },
   {
     para: '/setores',
@@ -201,12 +207,41 @@ export function Home() {
         </section>
 
         <section className="secao">
+          <h2>Radar da reforma</h2>
+          <p className="secao-desc">
+            Os marcos que já aconteceram e o próximo da fila — verificados em {RADAR_VERIFICADO_EM}, cada um com o
+            texto oficial ao lado.
+          </p>
+          <ol className="radar">
+            {NOVIDADES.map((n) => {
+              const f = n.fonteId ? fonte(n.fonteId) : null
+              return (
+                <li key={n.titulo} className={`radar-item${n.futuro ? ' radar-futuro' : ''}`}>
+                  <span className="radar-data mono">{n.data}</span>
+                  <div className="radar-corpo">
+                    <p className="radar-titulo">
+                      {n.titulo} {n.futuro && <Selo tom="destaque">a seguir</Selo>}
+                    </p>
+                    <p className="radar-texto">{n.texto}</p>
+                    {f && (
+                      <a className="radar-fonte" href={f.url} target="_blank" rel="noopener noreferrer" title={f.url}>
+                        {f.orgao} ↗
+                      </a>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        </section>
+
+        <section className="secao">
           <h2>Direto da fonte</h2>
           <p className="secao-desc">Tudo o que este site afirma aponta para o texto legal. Comece pelos três pilares:</p>
           <div className="fontes-grade">
             <SourceLink fonte={fonte('ec-132')} />
             <SourceLink fonte={fonte('lc-214')} />
-            <SourceLink fonte={fonte('plp-108')} />
+            <SourceLink fonte={fonte('lc-227')} />
           </div>
         </section>
       </div>

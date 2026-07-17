@@ -232,6 +232,64 @@
   gap: 10px;
 }
 
+/* radar da reforma */
+.radar {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.radar-item {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 4px 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.radar-data {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--petrol-bright);
+  white-space: nowrap;
+  padding-top: 3px;
+}
+
+.radar-futuro .radar-data {
+  color: var(--muted);
+}
+
+.radar-corpo {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+}
+
+.radar-titulo {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.radar-texto {
+  font-size: 0.9375rem;
+  color: var(--muted);
+  max-width: 72ch;
+}
+
+.radar-fonte {
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 560px) {
+  .radar-item {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ============ Guia ============ */
 .grade-2 {
   display: grid;
@@ -333,6 +391,84 @@
 .mecanismo p {
   font-size: 0.9075rem;
   color: var(--muted);
+}
+
+/* split payment: fluxo do pagamento */
+.split-wrap {
+  overflow-x: auto;
+}
+
+.split-svg {
+  display: block;
+  width: 100%;
+  min-width: 560px;
+  max-width: 780px;
+  height: auto;
+}
+
+.split-caixa {
+  fill: var(--surface);
+  stroke: var(--line-forte);
+}
+
+.split-caixa-fisco {
+  fill: var(--cor-cbs);
+  stroke: none;
+}
+
+.split-nome {
+  font: 700 14px var(--font-ui);
+  fill: var(--ink);
+}
+
+.split-nome-fisco,
+.split-valor-fisco {
+  fill: oklch(0.98 0.005 200);
+}
+
+.split-valor {
+  font: 600 14px var(--font-mono);
+  fill: var(--ink);
+}
+
+.split-detalhe {
+  font: 400 12px var(--font-ui);
+  fill: var(--muted);
+}
+
+.split-fluxo {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.split-fluxo-total {
+  stroke: var(--line-forte);
+  stroke-width: 14;
+}
+
+.split-fluxo-fisco {
+  stroke: var(--cor-cbs);
+  stroke-width: 5;
+}
+
+.split-fluxo-vendedor {
+  stroke: var(--line-forte);
+  stroke-width: 11;
+}
+
+.split-fluxo-rotulo {
+  font: 600 11px var(--font-mono);
+}
+
+.split-fluxo-rotulo-fisco {
+  fill: var(--cor-cbs);
+}
+
+.split-nota {
+  margin-top: 12px;
+  font-size: 0.875rem;
+  color: var(--muted);
+  max-width: 72ch;
 }
 
 .tabela-wrap {
@@ -753,6 +889,20 @@
   font-weight: 600;
 }
 
+/* linha de destaque (efeito líquido no Raio-X) */
+.dbars-row-forte {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.dbars-row-forte .dbars-label {
+  font-weight: 700;
+}
+
+.dbars-row-forte .dbars-valor {
+  font-size: 0.9375rem;
+}
+
 @media (max-width: 560px) {
   .dbars-row {
     grid-template-columns: minmax(0, 1fr) 84px;
@@ -824,6 +974,157 @@
   height: 7px;
   border-radius: 2px;
   background: var(--cor-ibs);
+}
+
+/* ============ Regime do vendedor (dentro/fora do IVA) ============ */
+.regime-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.regime-form {
+  display: grid;
+  gap: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--raio);
+  padding: 22px;
+  min-width: 0;
+}
+
+.regime-form > * {
+  min-width: 0;
+}
+
+.regime-resultado {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.regime-marco {
+  stroke: var(--line-forte);
+  stroke-width: 1;
+}
+
+.regime-ops {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.regime-op {
+  border: 1px solid var(--line);
+  border-radius: var(--raio);
+  padding: 14px 16px;
+}
+
+.regime-op header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.regime-op h3 {
+  font-size: 0.9375rem;
+}
+
+.regime-op p {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.regime-credito {
+  border: 1px solid var(--line);
+  border-radius: var(--raio);
+  padding: 16px 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.regime-credito h3 {
+  font-size: 1rem;
+}
+
+.regime-credito-desc {
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.regime-credito-desc strong,
+.regime-credito-nota strong {
+  color: var(--ink);
+}
+
+.regime-barras {
+  display: grid;
+  gap: 10px;
+}
+
+.regime-barra-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 260px) minmax(0, 1fr) 90px;
+  align-items: center;
+  gap: 12px;
+}
+
+.regime-barra-label {
+  font-size: 0.875rem;
+}
+
+.regime-barra-track {
+  height: 18px;
+  background: var(--surface);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.regime-barra-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  transition: width 450ms var(--saida);
+}
+
+.regime-barra-valor {
+  font-size: 0.8125rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.regime-credito-nota {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  .regime-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .regime-barra-row {
+    grid-template-columns: minmax(0, 1fr) 84px;
+    grid-template-areas: 'label valor' 'track track';
+    row-gap: 4px;
+  }
+
+  .regime-barra-label {
+    grid-area: label;
+  }
+
+  .regime-barra-track {
+    grid-area: track;
+  }
+
+  .regime-barra-valor {
+    grid-area: valor;
+  }
 }
 
 /* ============ Setores ============ */

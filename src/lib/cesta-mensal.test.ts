@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { CATEGORIAS } from '../data/categorias'
+import { PERFIS_CESTA } from '../data/cesta'
 import { icmsDaUf } from '../data/icmsUf'
 import { comparar } from './engine'
-import { cestaInicial, simularCesta } from './cesta-mensal'
+import { cestaInicial, csvDaCesta, simularCesta } from './cesta-mensal'
 
 const CESTA_SIMPLES = [
   { categoriaId: 'cesta-basica', rotulo: 'Mercado', valor: 500 },
@@ -80,5 +81,28 @@ describe('simularCesta', () => {
     const icmsSP = soSP.novo.itens.find((i) => i.id === 'icms')!.valor
     const icmsMA = soMA.novo.itens.find((i) => i.id === 'icms')!.valor
     expect(icmsMA).toBeGreaterThan(icmsSP) // MA 23% > SP 18%
+  })
+})
+
+describe('perfis de cesta', () => {
+  it('todo perfil cobre exatamente as categorias da cesta padrão', () => {
+    const ids = cestaInicial().map((i) => i.categoriaId)
+    for (const p of PERFIS_CESTA) {
+      expect(Object.keys(p.valores).sort()).toEqual([...ids].sort())
+    }
+  })
+})
+
+describe('csvDaCesta', () => {
+  it('gera uma linha por categoria, mais cabeçalho e totais, em formato pt-BR', () => {
+    const r = simularCesta(CESTA_SIMPLES, 'SP', 2033)
+    const linhas = csvDaCesta(r, 2033).split('\r\n')
+    expect(linhas[0]).toBe('Categoria;Hoje (R$);Em 2033 (R$);Diferença/mês (R$)')
+    expect(linhas).toHaveLength(1 + r.linhas.length + 2)
+    // vírgula decimal, sem ponto
+    expect(linhas[1]).toMatch(/;\d+,\d{2};/)
+    const total = linhas[linhas.length - 2]
+    expect(total.startsWith('Total;')).toBe(true)
+    expect(total.split(';')[1]).toBe(r.hoje.precoFinal.toFixed(2).replace('.', ','))
   })
 })

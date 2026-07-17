@@ -27,12 +27,12 @@ export const FONTES: Fonte[] = [
     descricao: 'A regulamentação geral: fato gerador, alíquotas, regimes diferenciados e específicos, Cesta Básica Nacional (Anexo I), split payment e cashback.',
   },
   {
-    id: 'plp-108',
-    titulo: 'PLP 108/2024 — Comitê Gestor do IBS',
-    orgao: 'Câmara dos Deputados',
-    tipo: 'Projeto',
-    url: 'https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=2374064',
-    descricao: 'Disciplina o Comitê Gestor do IBS, o contencioso administrativo e mudanças no ITCMD. Acompanhe a tramitação na ficha oficial.',
+    id: 'lc-227',
+    titulo: 'Lei Complementar nº 227/2026 — Comitê Gestor do IBS',
+    orgao: 'Planalto',
+    tipo: 'Lei',
+    url: 'https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp227.htm',
+    descricao: 'Institui o Comitê Gestor do IBS e o contencioso administrativo do imposto. Origem: PLP 108/2024, sancionado em 13/01/2026 — completa a regulamentação principal da reforma.',
   },
   {
     id: 'portal-fazenda',

@@ -8,6 +8,7 @@ const NAV = [
   { para: '/calculadora', rotulo: 'Calculadora' },
   { para: '/cesta', rotulo: 'Minha cesta' },
   { para: '/cashback', rotulo: 'Cashback' },
+  { para: '/raio-x', rotulo: 'Raio-X' },
   { para: '/setores', rotulo: 'Setores' },
   { para: '/glossario', rotulo: 'Glossário e fontes' },
 ]

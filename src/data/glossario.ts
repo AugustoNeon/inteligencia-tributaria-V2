@@ -102,7 +102,7 @@ export const GLOSSARIO: Termo[] = [
   {
     termo: 'Comitê Gestor do IBS',
     definicao:
-      'Entidade pública que reúne estados e municípios para arrecadar o IBS, uniformizar interpretação e distribuir a receita ao destino. Regulamentado pelo PLP 108/2024.',
+      'Entidade pública que reúne estados e municípios para arrecadar o IBS, uniformizar interpretação e distribuir a receita ao destino. Instituído pela LC 227/2026 (origem: PLP 108/2024, sancionado em janeiro de 2026).',
   },
   {
     termo: 'Zona Franca de Manaus',
@@ -118,6 +118,13 @@ export const GLOSSARIO: Termo[] = [
     termo: 'Nanoempreendedor',
     definicao:
       'Pessoa física com receita de até R$ 40,5 mil/ano (metade do teto do MEI) que fica fora do IVA — não precisa recolher CBS/IBS.',
+    relacionados: ['Simples Nacional'],
+  },
+  {
+    termo: 'Produtor rural não contribuinte',
+    definicao:
+      'Produtor rural (pessoa física ou jurídica) com receita de até R$ 3,6 mi/ano pode optar por ficar fora do IVA: não recolhe CBS/IBS, e quem compra dele recebe um crédito presumido definido em ato anual.',
+    relacionados: ['Nanoempreendedor'],
   },
   {
     termo: 'Transição federativa',

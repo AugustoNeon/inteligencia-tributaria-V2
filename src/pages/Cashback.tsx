@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { CabecalhoPagina } from '../components/layout/Shell'
 import { Donut } from '../components/charts/Donut'
 import { VizPanel } from '../components/charts/VizPanel'
-import { Callout, Campo, EntradaNumero, Sanfona, Segmentado, StatTile } from '../components/ui/kit'
+import { BotaoCompartilhar, Callout, Campo, EntradaNumero, Sanfona, Segmentado, StatTile, useCompartilharLink } from '../components/ui/kit'
 import { CALENDARIO_CASHBACK, ESSENCIAIS, NOTAS_CASHBACK, REQUISITOS, SALARIO_MINIMO_PADRAO } from '../data/cashback'
 import { calcularCashback } from '../lib/cashback'
 import { brl, pct } from '../lib/format'
@@ -38,7 +38,7 @@ export function Cashback() {
     telecom: numParam('te', GASTOS_PADRAO.telecom),
   }))
   const [demais, setDemais] = useState(() => numParam('de', 600))
-  const [copiado, setCopiado] = useState(false)
+  const { copiado, compartilhar } = useCompartilharLink()
 
   // colar um link compartilhado com a página já aberta também re-sincroniza o formulário
   useEffect(() => {
@@ -58,7 +58,7 @@ export function Cashback() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params])
 
-  const copiarLink = async () => {
+  const compartilharLink = () => {
     const q = new URLSearchParams({
       pe: String(pessoas),
       renda: String(renda),
@@ -72,13 +72,7 @@ export function Cashback() {
       de: String(demais),
     })
     setParams(q, { replace: true })
-    try {
-      await navigator.clipboard.writeText(`${location.origin}${location.pathname}#/cashback?${q.toString()}`)
-      setCopiado(true)
-      window.setTimeout(() => setCopiado(false), 2200)
-    } catch {
-      // sem permissão de clipboard: a URL já está na barra de endereço
-    }
+    void compartilhar(`${location.origin}${location.pathname}#/cashback?${q.toString()}`)
   }
 
   const r = useMemo(
@@ -155,9 +149,7 @@ export function Cashback() {
 
           <div className="calc-resultado">
             <div className="calc-share">
-              <button className={`botao-acao${copiado ? ' feito' : ''}`} onClick={copiarLink}>
-                {copiado ? '✓ Link copiado' : 'Copiar link da simulação'}
-              </button>
+              <BotaoCompartilhar copiado={copiado} onCompartilhar={compartilharLink} />
             </div>
             <div className={`elegibilidade ${r.elegivel ? 'ok' : 'nao'}`} role="status">
               {r.elegivel ? (

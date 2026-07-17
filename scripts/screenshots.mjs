@@ -1,11 +1,17 @@
 /**
  * Captura as imagens do README em docs/screenshots/.
- * Requer o dev server rodando (npm run dev) e o Microsoft Edge instalado.
+ * Requer o dev server rodando (npm run dev).
  * Uso: node scripts/screenshots.mjs [caminho-do-chrome-ou-edge]
+ *
+ * Tenta o launch normal do puppeteer; se falhar (nesta máquina o headless
+ * do Edge quebra o launch com "Code: 0"), abre o Chrome por CLI com porta
+ * de depuração remota e conecta via puppeteer.connect().
  */
 import puppeteer from 'puppeteer-core'
-import { existsSync, mkdirSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { spawn } from 'node:child_process'
+import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -14,13 +20,14 @@ mkdirSync(DESTINO, { recursive: true })
 
 const CANDIDATOS = [
   process.argv[2],
+  String.raw`C:\Program Files\Google\Chrome\Application\chrome.exe`,
+  String.raw`C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`,
   String.raw`C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`,
   String.raw`C:\Program Files\Microsoft\Edge\Application\msedge.exe`,
-  String.raw`C:\Program Files\Google\Chrome\Application\chrome.exe`,
 ].filter(Boolean)
 const navegador = CANDIDATOS.find((p) => existsSync(p))
 if (!navegador) {
-  console.error('Nenhum Edge/Chrome encontrado — passe o caminho do executável como argumento.')
+  console.error('Nenhum Chrome/Edge encontrado — passe o caminho do executável como argumento.')
   process.exit(1)
 }
 
@@ -30,12 +37,51 @@ const SHOTS = [
   { arquivo: 'inicio.png', url: `${BASE}/#/`, tema: 'claro', espera: 2600 },
   { arquivo: 'calculadora.png', url: `${BASE}/#/calculadora?preco=1000&cat=produto-padrao&ano=2033&uf=SP`, tema: 'claro', espera: 1400 },
   { arquivo: 'cesta.png', url: `${BASE}/#/cesta`, tema: 'claro', espera: 1400 },
+  { arquivo: 'raio-x.png', url: `${BASE}/#/raio-x`, tema: 'claro', espera: 1600 },
   { arquivo: 'linha-do-tempo.png', url: `${BASE}/#/linha-do-tempo?ano=2029`, tema: 'claro', espera: 1400 },
   { arquivo: 'setores.png', url: `${BASE}/#/setores`, tema: 'claro', espera: 1400 },
   { arquivo: 'inicio-escuro.png', url: `${BASE}/#/`, tema: 'escuro', espera: 2600 },
 ]
 
-const browser = await puppeteer.launch({ executablePath: navegador, headless: true, args: ['--no-first-run'] })
+/** launch normal; se falhar, Chrome por CLI + connect (fallback desta máquina). */
+async function abrirNavegador() {
+  try {
+    const browser = await puppeteer.launch({ executablePath: navegador, headless: true, args: ['--no-first-run'] })
+    return { browser, fechar: () => browser.close() }
+  } catch (erro) {
+    console.warn(`launch falhou (${erro.message.split('\n')[0]}) — tentando CLI + connect`)
+  }
+
+  const porta = 9222
+  const perfil = mkdtempSync(join(tmpdir(), 'shots-'))
+  const processo = spawn(
+    navegador,
+    ['--headless=new', `--remote-debugging-port=${porta}`, `--user-data-dir=${perfil}`, '--no-first-run'],
+    { stdio: 'ignore' },
+  )
+  const browser = await conectar(porta)
+  return {
+    browser,
+    fechar: async () => {
+      await browser.disconnect()
+      processo.kill()
+      rmSync(perfil, { recursive: true, force: true })
+    },
+  }
+}
+
+async function conectar(porta) {
+  for (let tentativa = 0; tentativa < 40; tentativa++) {
+    try {
+      return await puppeteer.connect({ browserURL: `http://127.0.0.1:${porta}` })
+    } catch {
+      await new Promise((r) => setTimeout(r, 250))
+    }
+  }
+  throw new Error(`não consegui conectar ao navegador na porta ${porta}`)
+}
+
+const { browser, fechar } = await abrirNavegador()
 
 for (const shot of SHOTS) {
   const page = await browser.newPage()
@@ -55,5 +101,5 @@ for (const shot of SHOTS) {
   await page.close()
 }
 
-await browser.close()
+await fechar()
 console.log('capturas em', DESTINO)

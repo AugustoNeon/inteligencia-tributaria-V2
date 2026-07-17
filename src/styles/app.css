@@ -491,6 +491,36 @@ select {
   gap: 6px;
 }
 
+/* chips de preset — exemplos da calculadora, perfis da cesta */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.chip {
+  border: 1px solid var(--line-forte);
+  border-radius: 99px;
+  padding: 5px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--bg);
+  transition: border-color 150ms ease-out, color 150ms ease-out, background 150ms ease-out;
+}
+
+.chip:hover {
+  border-color: var(--petrol-bright);
+  color: var(--ink);
+}
+
+.chip.on {
+  background: var(--petrol);
+  border-color: var(--petrol);
+  color: var(--ink-inversa);
+}
+
 .selo {
   display: inline-block;
   font-family: var(--font-mono);
