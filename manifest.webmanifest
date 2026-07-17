@@ -1,0 +1,16 @@
+{
+  "name": "Inteligência Tributária — atlas da Reforma Tributária",
+  "short_name": "Int. Tributária",
+  "description": "Guia interativo, linha do tempo, calculadoras e simuladores da Reforma Tributária brasileira (EC 132/2023 · LC 214/2025), com fontes oficiais.",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#12333d",
+  "icons": [
+    { "src": "./icone-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icone-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
