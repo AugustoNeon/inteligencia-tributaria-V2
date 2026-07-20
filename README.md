@@ -48,6 +48,7 @@
 - **Radar da reforma**: os marcos da regulamentação (EC 132 → LC 214/2025 → LC 227/2026) verificados e datados na página inicial, cada um com link para o texto oficial.
 - **IA com fronteira explícita**: o assistente (Claude Haiku via um Worker mínimo na Cloudflare que guarda a chave) recebe como contexto os **mesmos arquivos de dados do site** (`src/ia/briefing.ts` — uma fonte de verdade só) e **nunca calcula valores**: perguntas de preço viram uma chamada de ferramenta que preenche a Calculadora real e devolve o resultado do `engine.ts`. Governança de custo: interruptor liga/desliga com auto-expiração (Cloudflare KV + TTL), limite por visitante, teto global diário e cache de prompt (~90% de economia na entrada). Desligada, o worker nem chama a API — custo zero.
 - **Relatório em PDF sem biblioteca**: uma folha de impressão dedicada (`styles/print.css`) transforma a simulação num relatório — cabeçalho com parâmetros e data, premissas abertas automaticamente, sempre no tema claro com cores exatas — via `window.print()`.
+- **Code splitting por rota** (`React.lazy` + `Suspense`): cada página é um chunk sob demanda — a primeira visita baixa ~276 KB em vez dos 428 KB do bundle único, e os 74 KB da Calculadora (com a malha do mapa) só chegam quando ela abre.
 - **HashRouter + base relativa** para funcionar no GitHub Pages sem configuração de servidor; deploy automático via GitHub Actions.
 - Contraste AAA no texto (corpo 17,6:1; secundário 7,7:1), `prefers-reduced-motion` respeitado, gráficos com `role="img"` e `aria-label`.
 

@@ -74,12 +74,14 @@
   border-color: var(--cor-ibs);
 }
 
-/* diagrama 5 → 3 */
+/* diagrama 5 → 3: o fluxo vivo */
 .fusao {
   width: 100%;
   height: auto;
   max-width: 420px;
   justify-self: end;
+  --fusao-origem: oklch(0.52 0.11 45);
+  --fusao-pulso: oklch(0.99 0.01 200 / 0.75);
 }
 
 .fusao-chip {
@@ -94,6 +96,24 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* os três destinos "recebem" o fluxo: crescem a partir do próprio centro */
+.fusao-chega {
+  transform-box: fill-box;
+  transform-origin: center left;
+  animation: fusao-recebe 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fusao-recebe {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -116,18 +136,66 @@
   fill: var(--muted-inversa);
 }
 
+/* canal: gradiente cobre → cor do destino (o antigo se convertendo no novo) */
 .fusao-fluxo {
   fill: none;
-  stroke: oklch(0.45 0.04 210);
-  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: 0.8;
   stroke-dasharray: 220;
   stroke-dashoffset: 220;
-  animation: fusao-traça 900ms var(--saida) forwards;
+  animation: fusao-traça 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.fusao-grad-origem {
+  stop-color: var(--fusao-origem);
 }
 
 @keyframes fusao-traça {
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+/* pulsos: contas de luz viajando pelo canal em loop, depois da entrada */
+.fusao-pulso {
+  fill: none;
+  stroke: var(--fusao-pulso);
+  stroke-linecap: round;
+  stroke-dasharray: 3 55;
+  opacity: 0;
+  animation:
+    fusao-pulso-entra 800ms var(--saida) forwards,
+    fusao-pulso-viaja 3.2s linear infinite;
+  animation-delay: var(--atraso, 1.5s), var(--atraso, 1.5s);
+}
+
+@keyframes fusao-pulso-entra {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fusao-pulso-viaja {
+  to {
+    stroke-dashoffset: -58;
+  }
+}
+
+/* tema escuro: origem um pouco mais clara p/ manter o contraste do canal */
+:root[data-tema='escuro'] .fusao {
+  --fusao-origem: oklch(0.62 0.12 48);
+  --fusao-pulso: oklch(0.99 0.01 200 / 0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fusao-pulso {
+    animation: none;
+    opacity: 0.55;
+  }
+
+  .fusao-fluxo {
+    stroke-dashoffset: 0;
+    animation: none;
   }
 }
 

@@ -7,7 +7,14 @@ import { NOVIDADES, RADAR_VERIFICADO_EM } from '../data/novidades'
 import { TRANSICAO } from '../data/transicao'
 import { fonte } from '../data/fontes'
 
-/** Diagrama 5 → 3: os tributos antigos desaguando nos novos. */
+/**
+ * Diagrama 5 → 3 com fluxo vivo: os tributos antigos desaguando nos novos.
+ * Três codificações num desenho só:
+ *  - espessura do canal ≈ participação na arrecadação do sistema pleno
+ *    (mesma composição ilustrativa do gráfico da transição);
+ *  - gradiente cobre → cor do destino = o sistema antigo se convertendo no novo;
+ *  - pulsos contínuos = o fluxo não para depois da entrada.
+ */
 function DiagramaFusao() {
   const antigos = [
     { sigla: 'PIS', y: 26 },
@@ -21,21 +28,48 @@ function DiagramaFusao() {
     { sigla: 'IBS', nome: 'IVA estados + municípios', y: 229, cor: CORES.ibs },
     { sigla: 'IS', nome: 'Imposto Seletivo', y: 142, cor: CORES.is },
   ]
-  // pares origem → destino
-  const fluxos: [number, number][] = [
-    [0, 0],
-    [1, 0],
-    [2, 2],
-    [3, 1],
-    [4, 1],
+  // origem → destino; peso ≈ fatia da arrecadação em 2033 (composicao da transição)
+  const fluxos = [
+    { de: 0, para: 0, peso: 19 },
+    { de: 1, para: 0, peso: 19 },
+    { de: 2, para: 2, peso: 2 },
+    { de: 3, para: 1, peso: 44 },
+    { de: 4, para: 1, peso: 16 },
   ]
   const curva = (y0: number, y1: number) => `M118,${y0 + 14} C 190,${y0 + 14} 190,${y1 + 14} 262,${y1 + 14}`
+  const largura = (peso: number) => 1.5 + peso * 0.09
 
   return (
-    <svg viewBox="0 0 380 290" className="fusao" role="img" aria-label="Cinco tributos atuais (PIS, Cofins, IPI, ICMS e ISS) são substituídos por três: CBS, IBS e Imposto Seletivo">
-      {fluxos.map(([de, para], i) => (
-        <path key={i} d={curva(antigos[de].y, novos[para].y)} className="fusao-fluxo" style={{ animationDelay: `${0.4 + i * 0.12}s` }} />
+    <svg viewBox="0 0 380 290" className="fusao" role="img" aria-label="Cinco tributos atuais (PIS, Cofins, IPI, ICMS e ISS) são substituídos por três: CBS, IBS e Imposto Seletivo — a espessura de cada canal indica a fatia da arrecadação">
+      <defs>
+        {fluxos.map((f, i) => (
+          <linearGradient key={i} id={`fusao-grad-${i}`} gradientUnits="userSpaceOnUse" x1="118" y1="0" x2="262" y2="0">
+            <stop offset="0" className="fusao-grad-origem" />
+            <stop offset="1" style={{ stopColor: novos[f.para].cor }} />
+          </linearGradient>
+        ))}
+      </defs>
+
+      {/* canais: gradiente cobre → destino, espessura pela fatia da arrecadação */}
+      {fluxos.map((f, i) => (
+        <path
+          key={`canal-${i}`}
+          d={curva(antigos[f.de].y, novos[f.para].y)}
+          className="fusao-fluxo"
+          style={{ stroke: `url(#fusao-grad-${i})`, strokeWidth: largura(f.peso), animationDelay: `${0.35 + i * 0.1}s` }}
+        />
       ))}
+
+      {/* pulsos que seguem viajando pelos canais depois da entrada */}
+      {fluxos.map((f, i) => (
+        <path
+          key={`pulso-${i}`}
+          d={curva(antigos[f.de].y, novos[f.para].y)}
+          className="fusao-pulso"
+          style={{ strokeWidth: Math.max(1.3, largura(f.peso) * 0.42), '--atraso': `${1.5 + i * 0.4}s` } as React.CSSProperties}
+        />
+      ))}
+
       {antigos.map((t, i) => (
         <g key={t.sigla} className="fusao-chip" style={{ animationDelay: `${i * 0.09}s` }}>
           <rect x={8} y={t.y} width={110} height={28} rx={7} className="fusao-antigo" />
@@ -45,7 +79,7 @@ function DiagramaFusao() {
         </g>
       ))}
       {novos.map((t, i) => (
-        <g key={t.sigla} className="fusao-chip" style={{ animationDelay: `${0.9 + i * 0.12}s` }}>
+        <g key={t.sigla} className="fusao-chega" style={{ animationDelay: `${1.05 + i * 0.14}s` }}>
           <rect x={262} y={t.y} width={110} height={28} rx={7} style={{ fill: t.cor }} />
           <text x={317} y={t.y + 19} textAnchor="middle" className="fusao-sigla-nova">
             {t.sigla}
