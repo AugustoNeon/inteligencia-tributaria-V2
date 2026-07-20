@@ -1230,6 +1230,15 @@ select {
   background: oklch(1 0 0 / 0.12);
 }
 
+/* ============ carregamento de rota (code splitting) ============ */
+.pagina-carregando {
+  min-height: 55vh;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
 /* ============ reduced motion ============ */
 @media (prefers-reduced-motion: reduce) {
   *,
