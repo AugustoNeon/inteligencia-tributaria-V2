@@ -32,7 +32,7 @@
 | **Raio-X** | Cesta + cashback num retrato só do sistema pleno (2033): efeito líquido no orçamento da família e a **curva de progressividade** — carga de consumo por faixa de renda, antes e depois do cashback |
 | **Assistente de IA** | Chat flutuante que responde sobre a reforma a partir do conteúdo do próprio site — e, em perguntas de preço, **preenche a Calculadora na tela** em vez de calcular de cabeça: quem faz a conta é sempre o motor determinístico testado |
 | **Setores** | Slope chart de quem tende a pagar mais ou menos no sistema pleno, com a premissa de cada estimativa |
-| **Glossário e fontes** | 20+ termos pesquisáveis (com busca sem acento) e a biblioteca de documentos oficiais |
+| **Glossário e fontes** | 23 termos organizados por tema (Fundamentos, Alíquotas e regimes, Para o consumidor, Para quem vende, Cronograma e federação), com índice lateral "Nesta página", busca sem acento e a biblioteca de documentos oficiais |
 
 ## Decisões técnicas
 

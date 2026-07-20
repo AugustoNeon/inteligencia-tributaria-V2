@@ -30,21 +30,22 @@ const arte = (miolo) => `<!doctype html>
 <style>html,body{margin:0;width:100%;height:100%}svg{display:block;width:100%;height:100%}</style>
 ${miolo}`
 
+// glifo da confluência: cobre (antigo) + teal (novo) desaguam num nó claro
+const GLIFO = `<path d="M15 20 C 28 20, 28 32, 40 32" fill="none" stroke="#c2622a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M15 44 C 28 44, 28 32, 40 32" fill="none" stroke="#3cb5cd" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="42" cy="32" r="6.5" fill="#e8f4f8"/>`
+
 // ícone comum: a arte completa (cantos arredondados próprios, fundo transparente)
 const ICONE = arte(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <rect width="64" height="64" rx="14" fill="#12333d"/>
-  <path d="M20 44 L44 20" stroke="#e8f4f8" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="23" cy="23" r="6.5" fill="none" stroke="#3cb5cd" stroke-width="5"/>
-  <circle cx="41" cy="41" r="6.5" fill="none" stroke="#c2622a" stroke-width="5"/>
+  ${GLIFO}
 </svg>`)
 
 // maskable: fundo petróleo sangrado até a borda, glifo na zona segura (80%)
 const MASKABLE = arte(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <rect width="64" height="64" fill="#12333d"/>
   <g transform="translate(32 32) scale(0.72) translate(-32 -32)">
-    <path d="M20 44 L44 20" stroke="#e8f4f8" stroke-width="5" stroke-linecap="round"/>
-    <circle cx="23" cy="23" r="6.5" fill="none" stroke="#3cb5cd" stroke-width="5"/>
-    <circle cx="41" cy="41" r="6.5" fill="none" stroke="#c2622a" stroke-width="5"/>
+    ${GLIFO}
   </g>
 </svg>`)
 
