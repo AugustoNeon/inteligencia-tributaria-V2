@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { comparar } from '../lib/engine'
 import { CATEGORIAS } from '../data/categorias'
+import { CESTA_PADRAO, PERFIS_CESTA } from '../data/cesta'
 import { icmsDaUf } from '../data/icmsUf'
+import { simularCesta } from '../lib/cesta-mensal'
+import { simularPainel } from '../lib/painel'
 import { executarFerramenta } from './ferramentas'
 
 describe('abrir_calculadora', () => {
@@ -50,6 +53,76 @@ describe('abrir_calculadora', () => {
   })
 
   it('ferramenta desconhecida orienta o modelo a seguir sem ela', () => {
-    expect(executarFerramenta('abrir_cesta', {}).texto).toContain('desconhecida')
+    expect(executarFerramenta('abrir_tudo', {}).texto).toContain('desconhecida')
+  })
+})
+
+describe('abrir_cesta', () => {
+  it('perfil essencial: URL carrega as 8 categorias e os números vêm do motor', () => {
+    const r = executarFerramenta('abrir_cesta', { perfil: 'essencial', ano: 2033, uf: 'SP' })
+    expect(r.url).toContain('#/cesta?uf=SP&ano=2033')
+    for (const item of CESTA_PADRAO) expect(r.url).toContain(`${item.categoriaId}=`)
+
+    const perfil = PERFIS_CESTA.find((p) => p.id === 'essencial')!
+    const itens = CESTA_PADRAO.map((i) => ({ categoriaId: i.categoriaId, rotulo: i.rotulo, valor: perfil.valores[i.categoriaId] ?? 0 }))
+    const esperado = simularCesta(itens, 'SP', 2033)
+    expect(r.texto).toContain(Math.abs(esperado.deltaMensal).toFixed(2).replace('.', ','))
+  })
+
+  it('valor por categoria sobrescreve o perfil', () => {
+    const r = executarFerramenta('abrir_cesta', { perfil: 'familiar', ano: 2033, cesta_basica: 900 })
+    expect(r.url).toContain('cesta-basica=900')
+    expect(r.url).toContain('alimentos-gerais=450')
+  })
+
+  it('ano inválido vira erro corrigível', () => {
+    expect(executarFerramenta('abrir_cesta', { perfil: 'familiar', ano: 2024 }).url).toBeUndefined()
+  })
+})
+
+describe('abrir_cashback', () => {
+  it('família elegível: devolução do motor e URL preenchida', () => {
+    const r = executarFerramenta('abrir_cashback', { pessoas: 4, renda: 2800, cadunico: true })
+    expect(r.texto).toContain('elegível')
+    expect(r.texto).toContain('R$')
+    expect(r.url).toContain('#/cashback?pe=4&renda=2800&cad=sim')
+  })
+
+  it('renda alta: não elegível, explica o limite', () => {
+    const r = executarFerramenta('abrir_cashback', { pessoas: 2, renda: 10000, cadunico: true })
+    expect(r.texto).toContain('NÃO é elegível')
+    expect(r.texto).toContain('meio salário mínimo')
+  })
+
+  it('sem CadÚnico: não elegível pelo requisito', () => {
+    const r = executarFerramenta('abrir_cashback', { pessoas: 4, renda: 1500, cadunico: false })
+    expect(r.texto).toContain('CadÚnico')
+    expect(r.url).toContain('cad=nao')
+  })
+
+  it('cadunico ausente: pede o dado em vez de assumir', () => {
+    const r = executarFerramenta('abrir_cashback', { pessoas: 4, renda: 2800 })
+    expect(r.url).toBeUndefined()
+    expect(r.texto).toContain('cadunico')
+  })
+})
+
+describe('abrir_raio_x', () => {
+  it('efeito líquido vem do simularPainel e consumo padrão é 80% da renda', () => {
+    const r = executarFerramenta('abrir_raio_x', { pessoas: 4, renda: 2800, cadunico: true, uf: 'SP' })
+    expect(r.url).toContain('cons=2240')
+    const esperado = simularPainel({
+      pessoas: 4,
+      rendaFamiliar: 2800,
+      inscritoCadUnico: true,
+      consumo: 2240,
+      uf: 'SP',
+      salarioMinimo: 1621,
+    })
+    expect(r.texto).toContain(Math.abs(esperado.efeitoLiquidoMensal).toFixed(2).replace('.', ','))
+  })
+
+  it('cadunico ausente: erro corrigível', () => {
+    expect(executarFerramenta('abrir_raio_x', { pessoas: 4, renda: 2800 }).url).toBeUndefined()
   })
 })

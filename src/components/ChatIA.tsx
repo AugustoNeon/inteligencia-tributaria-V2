@@ -167,9 +167,15 @@ function Mensagem({ m }: { m: MensagemApi }) {
           )
         }
         if (b.type === 'tool_use') {
+          const rotulos: Record<string, string> = {
+            abrir_calculadora: 'abrindo a calculadora…',
+            abrir_cesta: 'montando a cesta mensal…',
+            abrir_cashback: 'simulando o cashback…',
+            abrir_raio_x: 'preparando o raio-X…',
+          }
           return (
             <p key={i} className="chat-tool mono">
-              → abrindo a calculadora…
+              → {rotulos[b.name] ?? 'consultando o site…'}
             </p>
           )
         }

@@ -41,11 +41,13 @@ const ORIGENS_PERMITIDAS = ['https://augustoneon.github.io', 'http://localhost:5
 
 const BRIEFING = montarBriefing()
 
+const UFS = ICMS_UF.map((u) => u.uf)
+
 const FERRAMENTAS: Anthropic.Messages.Tool[] = [
   {
     name: 'abrir_calculadora',
     description:
-      'Abre a Calculadora do site na tela do usuário, preenchida com os parâmetros, e devolve a simulação feita pelo motor oficial (preço hoje vs. preço no ano escolhido). Use SEMPRE que o usuário perguntar quanto algo custará/mudará em algum ano da transição. Nunca calcule por conta própria.',
+      'Abre a Calculadora do site na tela do usuário, preenchida com os parâmetros, e devolve a simulação feita pelo motor oficial (preço hoje vs. preço no ano escolhido). Use SEMPRE que o usuário perguntar quanto UM produto ou serviço custará/mudará em algum ano da transição. Nunca calcule por conta própria.',
     input_schema: {
       type: 'object',
       properties: {
@@ -56,13 +58,74 @@ const FERRAMENTAS: Anthropic.Messages.Tool[] = [
           description: 'Id da categoria do produto/serviço (lista e significado no briefing)',
         },
         ano: { type: 'number', enum: ANOS_SIMULAVEIS, description: 'Ano da simulação (2033 = sistema pleno)' },
-        uf: {
-          type: 'string',
-          enum: ICMS_UF.map((u) => u.uf),
-          description: 'Sigla do estado p/ o ICMS atual (opcional; padrão SP)',
-        },
+        uf: { type: 'string', enum: UFS, description: 'Sigla do estado p/ o ICMS atual (opcional; padrão SP)' },
       },
       required: ['preco', 'categoria', 'ano'],
+    },
+  },
+  {
+    name: 'abrir_cesta',
+    description:
+      'Abre a página Minha Cesta preenchida e devolve o efeito da reforma no ORÇAMENTO MENSAL INTEIRO da família (8 categorias de gasto). Use quando a pergunta for sobre o custo de vida mensal/da família, não sobre um item só. Parta de um perfil e sobrescreva só as categorias que o usuário citar.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        ano: { type: 'number', enum: ANOS_SIMULAVEIS, description: 'Ano da comparação (2033 = sistema pleno)' },
+        perfil: {
+          type: 'string',
+          enum: ['essencial', 'familiar', 'ampla'],
+          description:
+            'Ponto de partida: essencial (~R$ 1.300/mês, só o básico), familiar (~R$ 2.680/mês, padrão) ou ampla (~R$ 6.200/mês, pesada em serviços)',
+        },
+        uf: { type: 'string', enum: UFS, description: 'Estado p/ o ICMS atual (opcional; padrão SP)' },
+        cesta_basica: { type: 'number', description: 'R$/mês em mercado: cesta básica (opcional)' },
+        alimentos_gerais: { type: 'number', description: 'R$/mês em mercado: outros alimentos (opcional)' },
+        produto_padrao: { type: 'number', description: 'R$/mês em vestuário, casa e higiene (opcional)' },
+        medicamentos: { type: 'number', description: 'R$/mês em medicamentos (opcional)' },
+        saude: { type: 'number', description: 'R$/mês em consultas e exames (opcional)' },
+        educacao: { type: 'number', description: 'R$/mês em escola e cursos (opcional)' },
+        transporte_coletivo: { type: 'number', description: 'R$/mês em transporte público (opcional)' },
+        servico_padrao: { type: 'number', description: 'R$/mês em serviços: academia, salão, lazer (opcional)' },
+      },
+      required: ['ano', 'perfil'],
+    },
+  },
+  {
+    name: 'abrir_cashback',
+    description:
+      'Abre o simulador de Cashback preenchido e devolve elegibilidade e devolução mensal/anual estimada de CBS/IBS para a família. Use quando o usuário perguntar se tem direito ao cashback ou quanto receberia. Pergunte antes o que faltar: nº de pessoas, renda familiar e se a família está no CadÚnico.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        pessoas: { type: 'number', description: 'Pessoas na família' },
+        renda: { type: 'number', description: 'Renda familiar mensal total em R$' },
+        cadunico: { type: 'boolean', description: 'A família está inscrita no CadÚnico?' },
+        energia: { type: 'number', description: 'Conta de luz mensal em R$ (opcional; padrão 180)' },
+        agua: { type: 'number', description: 'Conta de água mensal em R$ (opcional; padrão 90)' },
+        gas_encanado: { type: 'number', description: 'Gás encanado mensal em R$ (opcional; padrão 0)' },
+        botijao: { type: 'number', description: 'Botijão de gás mensal em R$ (opcional; padrão 110)' },
+        telecom: { type: 'number', description: 'Internet/telefone mensal em R$ (opcional; padrão 120)' },
+        demais_compras: { type: 'number', description: 'Demais compras tributadas no mês em R$ (opcional; padrão 600)' },
+        salario_minimo: { type: 'number', description: 'Salário mínimo de referência (opcional)' },
+      },
+      required: ['pessoas', 'renda', 'cadunico'],
+    },
+  },
+  {
+    name: 'abrir_raio_x',
+    description:
+      'Abre o Raio-X preenchido: o retrato completo da família no sistema pleno (2033) — efeito na cesta MENOS o cashback = efeito líquido no orçamento. Use para perguntas do tipo "no fim das contas, minha família ganha ou perde com a reforma?". Pergunte antes o que faltar: pessoas, renda e CadÚnico.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        pessoas: { type: 'number', description: 'Pessoas na família' },
+        renda: { type: 'number', description: 'Renda familiar mensal total em R$' },
+        cadunico: { type: 'boolean', description: 'A família está inscrita no CadÚnico?' },
+        consumo: { type: 'number', description: 'Consumo mensal total em R$ (opcional; padrão = 80% da renda)' },
+        uf: { type: 'string', enum: UFS, description: 'Estado (opcional; padrão SP)' },
+        salario_minimo: { type: 'number', description: 'Salário mínimo de referência (opcional)' },
+      },
+      required: ['pessoas', 'renda', 'cadunico'],
     },
   },
 ]
