@@ -18,9 +18,10 @@ function Marca() {
     <Link to="/" className="marca" aria-label="Inteligência Tributária — início">
       <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden>
         <rect width="64" height="64" rx="14" fill="var(--petrol-deep)" />
-        <path d="M20 44 L44 20" stroke="#e8f4f8" strokeWidth="5" strokeLinecap="round" />
-        <circle cx="23" cy="23" r="6.5" fill="none" stroke="#3cb5cd" strokeWidth="5" />
-        <circle cx="41" cy="41" r="6.5" fill="none" stroke="#c2622a" strokeWidth="5" />
+        {/* confluência: o sistema antigo (cobre) e o novo (teal) desaguam num nó só */}
+        <path d="M15 20 C 28 20, 28 32, 40 32" fill="none" stroke="#c2622a" strokeWidth="5" strokeLinecap="round" />
+        <path d="M15 44 C 28 44, 28 32, 40 32" fill="none" stroke="#3cb5cd" strokeWidth="5" strokeLinecap="round" />
+        <circle cx="42" cy="32" r="6.5" fill="#e8f4f8" />
       </svg>
       <span className="marca-nome">
         Inteligência<b>Tributária</b>
