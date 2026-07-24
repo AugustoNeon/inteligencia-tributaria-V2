@@ -3,9 +3,10 @@ import { useSearchParams } from 'react-router-dom'
 import { CabecalhoPagina } from '../components/layout/Shell'
 import { StackedArea } from '../components/charts/StackedArea'
 import { VizPanel } from '../components/charts/VizPanel'
-import { Selo } from '../components/ui/kit'
+import { Selo, SourceLink, StatTile } from '../components/ui/kit'
 import { CORES } from '../data/tributos'
-import { EPILOGO_2078, TRANSICAO } from '../data/transicao'
+import { EPILOGO_2078, TRANSICAO, type AnoTransicao } from '../data/transicao'
+import { fonte } from '../data/fontes'
 import { anoDaTransicao, dataLonga, progressoTransicao, proximoMarco } from '../lib/agora'
 import { pct } from '../lib/format'
 
@@ -15,6 +16,15 @@ const FASES: Record<string, { rotulo: string; tom: 'neutro' | 'novo' | 'antigo' 
   federal: { rotulo: 'virada federal', tom: 'novo' },
   'estadual-municipal': { rotulo: 'transição ICMS/ISS', tom: 'antigo' },
   pleno: { rotulo: 'sistema pleno', tom: 'novo' },
+}
+
+/** cor do ponto de cada grupo de fase no índice — mesma codificação semântica do projeto */
+const FASE_COR: Record<string, string> = {
+  preparacao: 'var(--line-forte)',
+  teste: 'var(--cor-is)',
+  federal: 'var(--cor-cbs)',
+  'estadual-municipal': 'var(--cor-icms)',
+  pleno: 'var(--cor-ibs)',
 }
 
 export function LinhaDoTempo() {
@@ -31,6 +41,32 @@ export function LinhaDoTempo() {
   const ano = TRANSICAO[idx]
   const marco = proximoMarco(hoje)
   const progresso = progressoTransicao(hoje)
+  const antigoPct = ano.composicao.federaisAntigos + ano.composicao.icms + ano.composicao.iss
+  const novoPct = ano.composicao.cbs + ano.composicao.ibs + ano.composicao.is
+
+  // anos consecutivos da mesma fase viram um grupo recolhível no índice
+  const gruposFase = useMemo(() => {
+    const grupos: { fase: AnoTransicao['fase']; anos: AnoTransicao[] }[] = []
+    TRANSICAO.forEach((t) => {
+      const ultimo = grupos[grupos.length - 1]
+      if (ultimo && ultimo.fase === t.fase) ultimo.anos.push(t)
+      else grupos.push({ fase: t.fase, anos: [t] })
+    })
+    return grupos
+  }, [])
+
+  // só o grupo do ano inicial abre sozinho; os demais ficam recolhidos
+  const [gruposAbertos, setGruposAbertos] = useState<Set<AnoTransicao['fase']>>(
+    () => new Set([TRANSICAO[idxInicial].fase]),
+  )
+  const alternarGrupo = (fase: AnoTransicao['fase']) => {
+    setGruposAbertos((prev) => {
+      const proximo = new Set(prev)
+      if (proximo.has(fase)) proximo.delete(fase)
+      else proximo.add(fase)
+      return proximo
+    })
+  }
 
   const series = useMemo(
     () => [
@@ -47,6 +83,8 @@ export function LinhaDoTempo() {
   const selecionar = (i: number) => {
     setIdx(i)
     setParams({ ano: String(TRANSICAO[i].ano) }, { replace: true })
+    // garante que o grupo do ano escolhido esteja aberto (ex.: clique vindo do gráfico)
+    setGruposAbertos((prev) => new Set(prev).add(TRANSICAO[i].fase))
   }
 
   return (
@@ -54,31 +92,11 @@ export function LinhaDoTempo() {
       <CabecalhoPagina
         kicker="timeline://2023-2033"
         titulo="Dez anos para trocar o motor em pleno voo"
-        descricao="A reforma não liga uma chave: ela desliga um sistema e liga outro, ano a ano, entre 2026 e 2033 — com um epílogo federativo que vai até 2078. Selecione um ano no trilho ou no gráfico."
+        descricao="A reforma não liga uma chave: ela desliga um sistema e liga outro, ano a ano, entre 2026 e 2033 — com um epílogo federativo que vai até 2078. Selecione um ano no índice ao lado ou no gráfico."
       />
 
       <div className="conteudo">
         <section className="secao">
-          <div className="trilho" role="tablist" aria-label="Anos da transição">
-            {TRANSICAO.map((t, i) => (
-              <button
-                key={t.ano}
-                role="tab"
-                aria-selected={i === idx}
-                aria-label={t.ano === anoHoje ? `${t.ano} (ano atual)` : String(t.ano)}
-                className={`trilho-ano${i === idx ? ' on' : ''} trilho-${t.fase}${t.ano === anoHoje ? ' trilho-hoje' : ''}`}
-                onClick={() => selecionar(i)}
-              >
-                <span className="mono">{t.ano}</span>
-                {t.ano === anoHoje && (
-                  <span className="trilho-hoje-tag" aria-hidden>
-                    hoje
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-
           <div className="agora" role="group" aria-label="Posição de hoje na transição">
             <div className="agora-texto">
               <p className="agora-titulo">
@@ -114,20 +132,95 @@ export function LinhaDoTempo() {
             </div>
           </div>
 
-          <article className="ano-painel" key={ano.ano}>
-            <header className="ano-cab">
-              <h2>
-                <span className="ano-num mono">{ano.ano}</span> {ano.titulo}
-              </h2>
-              <Selo tom={FASES[ano.fase].tom}>{FASES[ano.fase].rotulo}</Selo>
-            </header>
-            <p className="ano-resumo">{ano.resumo}</p>
-            <ul className="ano-detalhes">
-              {ano.detalhes.map((d) => (
-                <li key={d}>{d}</li>
-              ))}
-            </ul>
-          </article>
+          <div className="transicao-grid">
+            <nav className="transicao-indice" aria-label="Anos da transição">
+              {gruposFase.map((g) => {
+                const aberto = gruposAbertos.has(g.fase)
+                const intervalo =
+                  g.anos.length > 1 ? `${g.anos[0].ano}–${g.anos[g.anos.length - 1].ano}` : String(g.anos[0].ano)
+                return (
+                  <div className="indice-grupo" key={g.fase}>
+                    <button className="indice-grupo-cab" aria-expanded={aberto} onClick={() => alternarGrupo(g.fase)}>
+                      <svg
+                        className={`indice-chevron${aberto ? ' aberto' : ''}`}
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        aria-hidden
+                      >
+                        <path d="M9 5l7 7-7 7" />
+                      </svg>
+                      <span className="indice-grupo-dot" style={{ background: FASE_COR[g.fase] }} aria-hidden />
+                      <span className="indice-grupo-nome">{FASES[g.fase].rotulo}</span>
+                      <span className="indice-grupo-intervalo mono">{intervalo}</span>
+                    </button>
+                    <div className={`indice-corpo-wrap${aberto ? ' aberto' : ''}`}>
+                      <div className="indice-corpo">
+                        <div className="indice-corpo-inner" role="tablist" aria-label={FASES[g.fase].rotulo}>
+                          {g.anos.map((t) => {
+                            const i = TRANSICAO.indexOf(t)
+                            return (
+                              <button
+                                key={t.ano}
+                                role="tab"
+                                aria-selected={i === idx}
+                                aria-label={t.ano === anoHoje ? `${t.ano} (ano atual)` : String(t.ano)}
+                                className={`indice-ano mono${i === idx ? ' on' : ''}`}
+                                onClick={() => selecionar(i)}
+                              >
+                                <span>{t.ano}</span>
+                                {t.ano === anoHoje && <span className="indice-hoje-tag">hoje</span>}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </nav>
+
+            <article className="transicao-conteudo" key={ano.ano}>
+              <header className="ano-cab">
+                <h2>
+                  <span className="ano-num mono">{ano.ano}</span> {ano.titulo}
+                </h2>
+                <Selo tom={FASES[ano.fase].tom}>{FASES[ano.fase].rotulo}</Selo>
+              </header>
+              <p className="ano-resumo">{ano.resumo}</p>
+
+              <div className="conteudo-stats">
+                <StatTile
+                  label="Ainda no sistema antigo"
+                  valor={pct(antigoPct / 100, 0)}
+                  contexto="PIS/Cofins/IPI + ICMS + ISS"
+                  tom="antigo"
+                />
+                <StatTile
+                  label="Já no sistema novo"
+                  valor={pct(novoPct / 100, 0)}
+                  contexto="CBS + IBS + Imposto Seletivo"
+                  tom="novo"
+                />
+              </div>
+
+              <ul className="ano-detalhes">
+                {ano.detalhes.map((d) => (
+                  <li key={d}>{d}</li>
+                ))}
+              </ul>
+
+              {ano.fonteId && (
+                <div className="conteudo-fonte">
+                  <SourceLink fonte={fonte(ano.fonteId)} />
+                </div>
+              )}
+            </article>
+          </div>
         </section>
 
         <section className="secao">

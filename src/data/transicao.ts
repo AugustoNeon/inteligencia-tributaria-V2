@@ -24,6 +24,8 @@ export interface AnoTransicao {
   detalhes: string[]
   fatores: FatoresAno
   composicao: { cbs: number; ibs: number; is: number; federaisAntigos: number; icms: number; iss: number }
+  /** id em data/fontes.ts — só nos anos com um marco legal específico e citável */
+  fonteId?: string
 }
 
 export const TRANSICAO: AnoTransicao[] = [
@@ -40,6 +42,7 @@ export const TRANSICAO: AnoTransicao[] = [
     ],
     fatores: { fatorIcmsIss: 1, cbsIntegral: false, pisCofinsAtivos: true, ipiAtivo: true, isAtivo: false },
     composicao: { cbs: 0, ibs: 0, is: 0, federaisAntigos: 40, icms: 52, iss: 8 },
+    fonteId: 'ec-132',
   },
   {
     ano: 2024,
@@ -68,6 +71,7 @@ export const TRANSICAO: AnoTransicao[] = [
     ],
     fatores: { fatorIcmsIss: 1, cbsIntegral: false, pisCofinsAtivos: true, ipiAtivo: true, isAtivo: false },
     composicao: { cbs: 0, ibs: 0, is: 0, federaisAntigos: 40, icms: 52, iss: 8 },
+    fonteId: 'lc-214',
   },
   {
     ano: 2026,
@@ -79,9 +83,11 @@ export const TRANSICAO: AnoTransicao[] = [
       'CBS 0,9% + IBS 0,1% destacados em nota (compensáveis com PIS/Cofins).',
       'Dispensa de recolhimento para quem entrega as obrigações acessórias em dia.',
       'Empresas validam ERPs, cadastros e o cálculo "por fora" na prática.',
+      'Em 13/01/2026, a LC 227/2026 institui o Comitê Gestor do IBS e o contencioso administrativo do imposto — completa a regulamentação principal da reforma.',
     ],
     fatores: { fatorIcmsIss: 1, cbsTeste: 0.009, ibsTeste: 0.001, cbsIntegral: false, pisCofinsAtivos: true, ipiAtivo: true, isAtivo: false },
     composicao: { cbs: 0.75, ibs: 0.25, is: 0, federaisAntigos: 39.2, icms: 52, iss: 7.8 },
+    fonteId: 'lc-227',
   },
   {
     ano: 2027,

@@ -575,81 +575,133 @@
 }
 
 /* ============ Linha do tempo ============ */
-.trilho {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 6px;
+.transicao-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: 28px;
+  margin-top: 22px;
+  align-items: start;
 }
 
-.trilho-ano {
-  flex: 1 0 auto;
-  min-width: 72px;
-  padding: 12px 8px 10px;
-  text-align: center;
-  border-radius: var(--raio-s);
-  border: 1px solid var(--line);
-  font-size: 0.9375rem;
-  transition: background 150ms ease-out, border-color 150ms ease-out, transform 180ms var(--saida);
-}
-
-/* barrinha de fase, interna ao botão */
-.trilho-ano::before {
-  content: '';
-  display: block;
-  width: 26px;
-  height: 4px;
-  border-radius: 99px;
-  margin: 0 auto 7px;
-  background: var(--cor-fase, var(--line-forte));
-}
-
-.trilho-preparacao {
-  --cor-fase: var(--line-forte);
-}
-
-.trilho-teste {
-  --cor-fase: var(--cor-is);
-}
-
-.trilho-federal {
-  --cor-fase: var(--cor-cbs);
-}
-
-.trilho-estadual-municipal {
-  --cor-fase: var(--cor-icms);
-}
-
-.trilho-pleno {
-  --cor-fase: var(--cor-ibs);
-}
-
-.trilho-ano:hover {
+.transicao-indice {
+  position: sticky;
+  top: 84px;
   background: var(--surface);
-  transform: translateY(-2px);
+  border: 1px solid var(--line);
+  border-radius: var(--raio);
+  padding: 10px;
+  min-width: 0;
 }
 
-.trilho-ano.on {
+.indice-grupo + .indice-grupo {
+  border-top: 1px solid var(--line);
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
+.indice-grupo-cab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 8px;
+  border-radius: var(--raio-s);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background 150ms ease-out;
+}
+
+.indice-grupo-cab:hover {
+  background: var(--surface-2);
+}
+
+.indice-grupo-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+
+.indice-grupo-nome {
+  flex: 1;
+  min-width: 0;
+}
+
+.indice-grupo-intervalo {
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.indice-chevron {
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: transform 200ms var(--saida);
+}
+
+.indice-chevron.aberto {
+  transform: rotate(90deg);
+}
+
+/* truque de grid-template-rows p/ animar altura sem JS medindo pixels */
+.indice-corpo-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 220ms var(--saida);
+}
+
+.indice-corpo-wrap.aberto {
+  grid-template-rows: 1fr;
+}
+
+.indice-corpo {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.indice-corpo-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 4px 8px 23px;
+}
+
+.indice-ano {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 7px 9px;
+  border-radius: var(--raio-s);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  transition: background 150ms ease-out, color 150ms ease-out;
+}
+
+.indice-ano:hover {
+  background: var(--surface-2);
+}
+
+.indice-ano.on {
   background: var(--petrol-deep);
   color: var(--ink-inversa);
-  border-color: var(--petrol-deep);
 }
 
-/* selo "hoje" no trilho */
-.trilho-ano {
-  position: relative;
-}
-
-.trilho-hoje-tag {
-  display: block;
-  margin-top: 2px;
+.indice-hoje-tag {
   font: 600 0.625rem var(--font-mono);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: var(--petrol-bright);
 }
 
-.trilho-ano.on .trilho-hoje-tag {
+.indice-ano.on .indice-hoje-tag {
   color: var(--cor-ibs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indice-corpo-wrap,
+  .indice-chevron {
+    transition: none;
+  }
 }
 
 /* "você está aqui" — posição da data real na transição */
@@ -734,9 +786,9 @@
   }
 }
 
-.ano-painel {
-  margin-top: 26px;
+.transicao-conteudo {
   animation: entra 320ms var(--saida) both;
+  min-width: 0;
 }
 
 .ano-cab {
@@ -760,6 +812,21 @@
   margin-top: 10px;
   max-width: 72ch;
   font-size: 1.0625rem;
+}
+
+.conteudo-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.conteudo-stats .stat-tile {
+  flex: 1 1 200px;
+}
+
+.conteudo-fonte {
+  margin-top: 16px;
 }
 
 .ano-detalhes {
@@ -1359,6 +1426,14 @@
   }
 
   .calc-form {
+    position: static;
+  }
+
+  .transicao-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .transicao-indice {
     position: static;
   }
 
