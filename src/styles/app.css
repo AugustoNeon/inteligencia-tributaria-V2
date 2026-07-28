@@ -673,6 +673,21 @@ select {
   min-width: 0;
 }
 
+/* cada palavra surge esmaecida e ganha corpo — só as recém-chegadas animam,
+   porque as anteriores mantêm o mesmo nó entre um pedaço do fluxo e o outro */
+.ia-palavra {
+  animation: ia-palavra-entra 420ms var(--saida, ease-out) both;
+}
+
+@keyframes ia-palavra-entra {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* cursor de escrita: some sozinho quando o fluxo fecha e a mensagem assenta */
 .chat-msg-ia-fluindo .chat-msg-ia-corpo > :last-child::after {
   content: '';

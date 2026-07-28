@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { analisarLinha, analisarTexto } from './texto'
+import { analisarLinha, analisarTexto, separarPalavras } from './texto'
 
 describe('analisarLinha', () => {
   it('marca negrito e devolve o texto sem os asteriscos', () => {
@@ -26,6 +26,48 @@ describe('analisarLinha', () => {
     const forte = t.find((x) => x.forte)!
     expect(forte.valor).toBe('R$ 2,60')
     expect(forte.dado).toBe(true)
+  })
+})
+
+describe('negrito ainda chegando (fluxo)', () => {
+  it('marca aberta não vaza para a tela: o trecho já nasce forte', () => {
+    const t = analisarLinha('O **cashback é uma devolu')
+    expect(t.map((x) => x.valor).join('')).toBe('O cashback é uma devolu')
+    expect(t.find((x) => x.forte)?.valor).toBe('cashback é uma devolu')
+  })
+
+  it('marca sem nada depois é descartada', () => {
+    expect(analisarLinha('O **').map((x) => x.valor).join('')).toBe('O ')
+  })
+
+  it('fechado o negrito, o resultado é o mesmo de sempre', () => {
+    expect(analisarLinha('O **cashback** devolve')).toEqual(analisarLinha('O **cashback** devolve'))
+    expect(analisarLinha('O **cashback** devolve').filter((t) => t.forte)).toHaveLength(1)
+  })
+})
+
+describe('separarPalavras', () => {
+  it('uma unidade por palavra, com o espaço colado atrás', () => {
+    expect(separarPalavras(analisarLinha('o imposto cai')).map((t) => t.valor)).toEqual(['o ', 'imposto ', 'cai'])
+  })
+
+  it('valor não é partido ao meio e mantém as marcas', () => {
+    const p = separarPalavras(analisarLinha('sobra **R$ 1.234,56** por mês'))
+    const valor = p.find((t) => t.dado)!
+    expect(valor.valor).toBe('R$ 1.234,56')
+    expect(valor.forte).toBe(true)
+  })
+
+  it('nenhuma unidade nasce vazia (seria uma palavra invisível animando)', () => {
+    for (const t of separarPalavras(analisarLinha('  espaços   soltos  aqui '))) {
+      expect(t.valor).not.toBe('')
+    }
+  })
+
+  it('texto que cresce mantém as palavras já escritas na mesma posição', () => {
+    const antes = separarPalavras(analisarLinha('Em 2033 o preço'))
+    const depois = separarPalavras(analisarLinha('Em 2033 o preço cai'))
+    expect(depois.slice(0, antes.length - 1).map((t) => t.valor)).toEqual(antes.slice(0, -1).map((t) => t.valor))
   })
 })
 

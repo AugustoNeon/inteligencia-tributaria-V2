@@ -9,7 +9,7 @@
 import type { CartaoFerramenta } from '../../ia/ferramentas'
 import type { Convite } from '../../ia/convites'
 import { extrairConvites } from '../../ia/convites'
-import { analisarTexto, type Trecho } from '../../ia/texto'
+import { analisarTexto, separarPalavras, type Trecho } from '../../ia/texto'
 import type { BlocoTexto, BlocoFerramenta, BlocoResultadoFerramenta, MensagemApi } from '../../ia/tipos'
 import { falaVisivel } from '../../ia/formularios'
 import type { IdFormulario } from '../../ia/formularios'
@@ -24,26 +24,30 @@ export function MarcaIa() {
   )
 }
 
-function Trechos({ trechos }: { trechos: Trecho[] }) {
+/**
+ * Enquanto a resposta chega, cada palavra é uma unidade própria que surge
+ * esmaecida e ganha opacidade. A chave é a posição: palavra já escrita mantém
+ * o índice, React reaproveita o nó e a animação não recomeça — só a recém
+ * chegada aparece. Fechada a mensagem, o texto volta a ser um nó só.
+ */
+function Trechos({ trechos, fluindo }: { trechos: Trecho[]; fluindo?: boolean }) {
+  const unidades = fluindo ? separarPalavras(trechos) : trechos
   return (
     <>
-      {trechos.map((t, i) => {
-        const conteudo = t.dado ? (
-          <span key={i} className="ia-dado">
-            {t.valor}
+      {unidades.map((t, i) => {
+        const conteudo = t.dado ? <span className="ia-dado">{t.valor}</span> : t.valor
+        return (
+          <span key={i} className={fluindo ? 'ia-palavra' : undefined}>
+            {t.forte ? <strong>{conteudo}</strong> : conteudo}
           </span>
-        ) : (
-          t.valor
         )
-        if (!t.forte) return <span key={i}>{conteudo}</span>
-        return <strong key={i}>{conteudo}</strong>
       })}
     </>
   )
 }
 
 /** Texto rico da IA: parágrafos, listas curtas, negrito e valores em mono. */
-export function TextoIa({ texto }: { texto: string }) {
+export function TextoIa({ texto, fluindo }: { texto: string; fluindo?: boolean }) {
   return (
     <>
       {analisarTexto(texto).map((bloco, i) =>
@@ -51,13 +55,13 @@ export function TextoIa({ texto }: { texto: string }) {
           <ul key={i} className="ia-lista">
             {bloco.itens.map((item, j) => (
               <li key={j}>
-                <Trechos trechos={item} />
+                <Trechos trechos={item} fluindo={fluindo} />
               </li>
             ))}
           </ul>
         ) : (
           <p key={i} className="ia-paragrafo">
-            <Trechos trechos={bloco.trechos} />
+            <Trechos trechos={bloco.trechos} fluindo={fluindo} />
           </p>
         ),
       )}
@@ -129,7 +133,7 @@ export function RespostaEmCurso({ texto }: { texto: string }) {
         <MarcaIa />
       </span>
       <div className="chat-msg-ia-corpo">
-        {visivel ? <TextoIa texto={visivel} /> : <p className="ia-paragrafo" />}
+        {visivel ? <TextoIa texto={visivel} fluindo /> : <p className="ia-paragrafo" />}
       </div>
     </div>
   )

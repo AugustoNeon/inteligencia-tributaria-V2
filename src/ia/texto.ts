@@ -25,11 +25,23 @@ export type Bloco = { tipo: 'paragrafo'; trechos: Trecho[] } | { tipo: 'lista'; 
 const RE_DADO = /[−-]?R\$\s?\d[\d.]*(?:,\d+)?|[−-]?\d+(?:,\d+)?\s?%/g
 const RE_ITEM = /^\s*[-•*]\s+(.*)$/
 
+/**
+ * Negrito ainda aberto — o texto chega em fluxo e a marca de fechamento pode
+ * não ter vindo. Fecha no fim da linha para o trecho já nascer forte (em vez
+ * de piscar cru e depois virar negrito); se nem um caractere veio depois da
+ * marca, descarta a marca.
+ */
+function normalizarNegrito(linha: string): string {
+  const marcas = linha.match(/\*\*/g)?.length ?? 0
+  if (marcas % 2 === 0) return linha
+  return linha.endsWith('**') ? linha.slice(0, -2) : `${linha}**`
+}
+
 /** Quebra uma linha em trechos, marcando negrito e valores. */
 export function analisarLinha(linha: string): Trecho[] {
   const trechos: Trecho[] = []
   // **negrito** primeiro: os pedaços ímpares do split são o conteúdo forte
-  const partes = linha.split(/\*\*(.+?)\*\*/g)
+  const partes = normalizarNegrito(linha).split(/\*\*(.+?)\*\*/g)
   partes.forEach((parte, i) => {
     if (!parte) return
     const forte = i % 2 === 1
@@ -49,6 +61,27 @@ function separarDados(texto: string): Trecho[] {
   }
   if (cursor < texto.length) trechos.push({ valor: texto.slice(cursor) })
   return trechos
+}
+
+/**
+ * Um trecho por palavra, para a resposta em fluxo poder revelar palavra a
+ * palavra. O espaço fica colado no fim da palavra anterior (não vira unidade
+ * própria) para nenhuma unidade nascer invisível e o texto não "respirar"
+ * entre palavras. Valores em R$/% ficam inteiros: uma quantia não deveria
+ * aparecer partida ao meio.
+ */
+export function separarPalavras(trechos: Trecho[]): Trecho[] {
+  const palavras: Trecho[] = []
+  for (const trecho of trechos) {
+    if (trecho.dado) {
+      palavras.push(trecho)
+      continue
+    }
+    for (const pedaco of trecho.valor.split(/(?<=\s)/)) {
+      if (pedaco) palavras.push({ ...trecho, valor: pedaco })
+    }
+  }
+  return palavras
 }
 
 /**
