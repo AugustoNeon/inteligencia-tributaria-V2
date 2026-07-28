@@ -107,6 +107,32 @@ describe('abrir_cashback', () => {
   })
 })
 
+describe('cartão da simulação', () => {
+  it('erro não gera cartão — o chat não mostra número que não existe', () => {
+    expect(executarFerramenta('abrir_calculadora', { preco: -5, categoria: 'saude', ano: 2033 }).cartao).toBeUndefined()
+    expect(executarFerramenta('abrir_cashback', { pessoas: 4, renda: 2800 }).cartao).toBeUndefined()
+  })
+
+  it('preço que cai marca ganho; preço que sobe marca perda', () => {
+    const cai = executarFerramenta('abrir_calculadora', { preco: 100, categoria: 'cesta-basica', ano: 2033 })
+    const sobe = executarFerramenta('abrir_calculadora', { preco: 100, categoria: 'servico-padrao', ano: 2033 })
+    expect(cai.cartao?.destaque.tom).toBe('ganho')
+    expect(sobe.cartao?.destaque.tom).toBe('perda')
+  })
+
+  it('o cartão leva a mesma URL do texto e repete os valores do motor', () => {
+    const r = executarFerramenta('abrir_calculadora', { preco: 1000, categoria: 'produto-padrao', ano: 2033, uf: 'SP' })
+    expect(r.cartao?.url).toBe(r.url)
+    for (const linha of r.cartao!.linhas) expect(r.texto).toContain(linha.valor)
+  })
+
+  it('família sem CadÚnico: cartão diz que não há devolução', () => {
+    const r = executarFerramenta('abrir_cashback', { pessoas: 4, renda: 1500, cadunico: false })
+    expect(r.cartao?.destaque.valor).toBe('sem direito')
+    expect(r.cartao?.linhas.some((l) => l.nota === 'sem CadÚnico')).toBe(true)
+  })
+})
+
 describe('abrir_raio_x', () => {
   it('efeito líquido vem do simularPainel e consumo padrão é 80% da renda', () => {
     const r = executarFerramenta('abrir_raio_x', { pessoas: 4, renda: 2800, cadunico: true, uf: 'SP' })

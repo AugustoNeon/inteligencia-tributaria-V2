@@ -25,11 +25,22 @@ export interface MensagemApi {
   content: string | (BlocoTexto | BlocoFerramenta | BlocoResultadoFerramenta)[]
 }
 
-/** Resposta do endpoint /chat do worker. */
+/** Resposta do endpoint /chat do worker, já remontada a partir do fluxo. */
 export interface RespostaChat {
   content: BlocoAssistente[]
   stop_reason: string
 }
+
+/**
+ * Eventos do fluxo SSE de /chat. O worker não repassa os eventos crus da API:
+ * manda só o pedaço de texto (para a tela acompanhar a escrita) e, no fim, a
+ * mensagem inteira remontada — que é o que entra no histórico e alimenta as
+ * ferramentas.
+ */
+export type EventoChat =
+  | { tipo: 'texto'; delta: string }
+  | { tipo: 'fim'; content: BlocoAssistente[]; stop_reason: string }
+  | { tipo: 'erro'; status: number | null }
 
 /** Resposta do endpoint /status do worker. */
 export interface StatusIa {

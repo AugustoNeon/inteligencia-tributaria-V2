@@ -4,6 +4,7 @@ import { FONTES } from '../data/fontes'
 import { GLOSSARIO } from '../data/glossario'
 import { TRANSICAO } from '../data/transicao'
 import { montarBriefing } from './briefing'
+import { FORMULARIOS, MARCA_MOTOR } from './formularios'
 
 const briefing = montarBriefing()
 
@@ -38,6 +39,17 @@ describe('montarBriefing', () => {
     expect(briefing).toContain('ESTIMATIVA DIDÁTICA')
     expect(briefing).toContain('abrir_calculadora')
     expect(briefing).toContain('contador')
+  })
+
+  it('ensina a sintaxe dos convites e todo id que o site sabe abrir', () => {
+    expect(briefing).toContain('::acao')
+    for (const id of Object.keys(FORMULARIOS)) {
+      expect(briefing, id).toContain(`\n${id} — `)
+    }
+  })
+
+  it('avisa para não recalcular o que veio de formulário', () => {
+    expect(briefing).toContain(MARCA_MOTOR)
   })
 
   it('cabe no orçamento de contexto (embaixo de 40 KB)', () => {

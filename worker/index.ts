@@ -164,7 +164,7 @@ async function estadoInterruptor(kv: KVNamespace): Promise<{ ligada: boolean; ex
 
 /* --------------------------------- handlers -------------------------------- */
 
-async function chat(request: Request, env: Env, origin: string | null): Promise<Response> {
+async function chat(request: Request, env: Env, origin: string | null, ctx: ExecutionContext): Promise<Response> {
   const { ligada } = await estadoInterruptor(env.IA_KV)
   if (!ligada) return json({ erro: 'desligada' }, 503, origin)
 
@@ -192,22 +192,48 @@ async function chat(request: Request, env: Env, origin: string | null): Promise<
   }
 
   const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, maxRetries: 1 })
-  try {
-    const resposta = await anthropic.messages.create({
-      model: MODELO,
-      max_tokens: MAX_TOKENS_RESPOSTA,
-      system: [{ type: 'text', text: BRIEFING, cache_control: { type: 'ephemeral' } }],
-      tools: FERRAMENTAS,
-      messages,
-    })
-    return json({ content: resposta.content, stop_reason: resposta.stop_reason }, 200, origin)
-  } catch (erro) {
-    if (erro instanceof Anthropic.APIError) {
-      const status = erro.status === 429 ? 429 : 502
-      return json({ erro: 'api', detalhe: erro.status }, status, origin)
-    }
-    return json({ erro: 'interna' }, 500, origin)
-  }
+
+  // A resposta sai como fluxo (SSE) para o texto aparecer sendo escrito, em vez
+  // de surgir pronto depois da espera. Só o que a tela precisa atravessa o fio:
+  // os pedaços de texto e, no fim, a mensagem remontada.
+  const { readable, writable } = new TransformStream()
+  const escritor = writable.getWriter()
+  const codificador = new TextEncoder()
+  const emitir = (evento: unknown) => escritor.write(codificador.encode(`data: ${JSON.stringify(evento)}\n\n`))
+
+  ctx.waitUntil(
+    (async () => {
+      try {
+        const fluxo = anthropic.messages.stream({
+          model: MODELO,
+          max_tokens: MAX_TOKENS_RESPOSTA,
+          system: [{ type: 'text', text: BRIEFING, cache_control: { type: 'ephemeral' } }],
+          tools: FERRAMENTAS,
+          messages,
+        })
+        for await (const evento of fluxo) {
+          if (evento.type === 'content_block_delta' && evento.delta.type === 'text_delta') {
+            await emitir({ tipo: 'texto', delta: evento.delta.text })
+          }
+        }
+        const final = await fluxo.finalMessage()
+        await emitir({ tipo: 'fim', content: final.content, stop_reason: final.stop_reason })
+      } catch (erro) {
+        // o cabeçalho 200 já foi enviado: o erro tem que viajar dentro do fluxo
+        await emitir({ tipo: 'erro', status: erro instanceof Anthropic.APIError ? erro.status : null })
+      } finally {
+        await escritor.close()
+      }
+    })(),
+  )
+
+  return new Response(readable, {
+    headers: {
+      'content-type': 'text/event-stream; charset=utf-8',
+      'cache-control': 'no-cache',
+      ...cors(origin),
+    },
+  })
 }
 
 async function admin(request: Request, env: Env, origin: string | null): Promise<Response> {
@@ -239,7 +265,7 @@ async function admin(request: Request, env: Env, origin: string | null): Promise
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const origin = request.headers.get('Origin')
     const url = new URL(request.url)
 
@@ -249,7 +275,7 @@ export default {
       const estado = await estadoInterruptor(env.IA_KV)
       return json(estado, 200, origin)
     }
-    if (url.pathname === '/chat' && request.method === 'POST') return chat(request, env, origin)
+    if (url.pathname === '/chat' && request.method === 'POST') return chat(request, env, origin, ctx)
     if (url.pathname === '/admin' && request.method === 'POST') return admin(request, env, origin)
 
     return json({ erro: 'rota' }, 404, origin)

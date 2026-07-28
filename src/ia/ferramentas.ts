@@ -21,11 +21,33 @@ import { comparar } from '../lib/engine'
 import { brl, pct } from '../lib/format'
 import { simularPainel } from '../lib/painel'
 
+export interface LinhaCartao {
+  rotulo: string
+  valor: string
+  /** segunda coluna: carga, peso na renda, o que couber */
+  nota?: string
+}
+
+/**
+ * A mesma simulação, formatada para o cartão que fica no histórico do chat.
+ * O texto vai para o modelo; o cartão fica para o visitante — assim o número
+ * não se perde quando a conversa rola e a página é trocada.
+ */
+export interface CartaoFerramenta {
+  ferramenta: string
+  contexto: string
+  linhas: LinhaCartao[]
+  destaque: { rotulo: string; valor: string; tom: 'ganho' | 'perda' | 'neutro' }
+  url: string
+}
+
 export interface ResultadoFerramenta {
   /** o que volta ao modelo como tool_result */
   texto: string
   /** hash de navegação (ex.: "#/calculadora?...") quando a tela deve abrir */
   url?: string
+  /** presente sempre que houve simulação de verdade (erro não tem cartão) */
+  cartao?: CartaoFerramenta
 }
 
 export function executarFerramenta(nome: string, input: Record<string, unknown>): ResultadoFerramenta {
@@ -43,6 +65,14 @@ const deltaMensalTexto = (delta: number) =>
     : delta < 0
       ? `economia estimada de ${brl(-delta)} por mês`
       : `custo extra estimado de ${brl(delta)} por mês`
+
+/** delta negativo = sobra dinheiro no bolso da família */
+const tomDoDelta = (delta: number): 'ganho' | 'perda' | 'neutro' =>
+  Math.abs(delta) < 0.005 ? 'neutro' : delta < 0 ? 'ganho' : 'perda'
+
+/** −12,34 → "− R$ 12,34" · +12,34 → "+ R$ 12,34" */
+const brlComSinal = (delta: number) =>
+  Math.abs(delta) < 0.005 ? brl(0) : `${delta < 0 ? '−' : '+'} ${brl(Math.abs(delta))}`
 
 const numeroOu = (v: unknown, padrao: number) => {
   const n = Number(v)
@@ -101,6 +131,16 @@ function abrirCalculadora(input: Record<string, unknown>): ResultadoFerramenta {
       notaUf +
       notaAnoTeste,
     url,
+    cartao: {
+      ferramenta: 'Calculadora',
+      contexto: `${categoria.rotulo} · ${ano}${categoria.icmsModal ? ` · ${uf}` : ''}`,
+      linhas: [
+        { rotulo: 'hoje', valor: brl(r.hoje.precoFinal), nota: pct(r.hoje.carga) },
+        { rotulo: String(ano), valor: brl(r.novo.precoFinal), nota: pct(r.novo.carga) },
+      ],
+      destaque: { rotulo: 'no preço', valor: brlComSinal(delta), tom: tomDoDelta(delta) },
+      url,
+    },
   }
 }
 
@@ -140,12 +180,27 @@ function abrirCesta(input: Record<string, unknown>): ResultadoFerramenta {
   for (const item of itens) q.set(item.categoriaId, String(item.valor))
 
   const maior = [...r.linhas].sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))[0]
+  const url = `#/cesta?${q.toString()}`
   return {
     texto:
       `Cesta mensal aberta na tela (orçamento de ${brl(orcamento)}, ICMS de ${uf}).` +
       ` Hoje a família paga ${brl(r.hoje.totalImpostos)} de tributos embutidos; em ${ano}, ${brl(r.novo.totalImpostos)} — ${deltaMensalTexto(r.deltaMensal)} (${brl(Math.abs(r.deltaAnual))} por ano).` +
       (maior ? ` Categoria que mais muda: ${maior.rotulo} (${brl(maior.delta)}/mês).` : ''),
-    url: `#/cesta?${q.toString()}`,
+    url,
+    cartao: {
+      ferramenta: 'Minha cesta',
+      contexto: `${brl(orcamento)}/mês · ${uf} · ${ano}`,
+      linhas: [
+        { rotulo: 'imposto hoje', valor: brl(r.hoje.totalImpostos), nota: 'por mês' },
+        { rotulo: `imposto em ${ano}`, valor: brl(r.novo.totalImpostos), nota: 'por mês' },
+      ],
+      destaque: {
+        rotulo: 'no mês',
+        valor: brlComSinal(r.deltaMensal),
+        tom: tomDoDelta(r.deltaMensal),
+      },
+      url,
+    },
   }
 }
 
@@ -193,9 +248,26 @@ function abrirCashback(input: Record<string, unknown>): ResultadoFerramenta {
       ? `A família NÃO é elegível: a renda por pessoa (${brl(r.rendaPerCapita)}) passa do limite de meio salário mínimo (${brl(r.limite)}).`
       : `A família NÃO é elegível porque não está inscrita no CadÚnico — esse é um requisito obrigatório, além da renda por pessoa de até meio salário mínimo.`
 
+  const url = `#/cashback?${q.toString()}`
   return {
     texto: `Simulador de cashback aberto na tela. ${situacao} Lembre: a devolução da CBS começa em 2027 e a do IBS em 2029.`,
-    url: `#/cashback?${q.toString()}`,
+    url,
+    cartao: {
+      ferramenta: 'Cashback',
+      contexto: `${pessoas} ${pessoas === 1 ? 'pessoa' : 'pessoas'} · ${brl(renda)}/mês · ${input.cadunico ? 'no CadÚnico' : 'fora do CadÚnico'}`,
+      linhas: [
+        { rotulo: 'renda por pessoa', valor: brl(r.rendaPerCapita), nota: `limite ${brl(r.limite)}` },
+        {
+          rotulo: 'situação',
+          valor: r.elegivel ? 'elegível' : 'não elegível',
+          nota: r.elegivel ? undefined : input.cadunico ? 'renda acima do limite' : 'sem CadÚnico',
+        },
+      ],
+      destaque: r.elegivel
+        ? { rotulo: 'devolução', valor: `${brl(r.totalMensal)}/mês`, tom: 'ganho' }
+        : { rotulo: 'devolução', valor: 'sem direito', tom: 'neutro' },
+      url,
+    },
   }
 }
 
@@ -236,11 +308,30 @@ function abrirRaioX(input: Record<string, unknown>): ResultadoFerramenta {
         ? `a família tende a SAIR GANHANDO ${brl(-r.efeitoLiquidoMensal)} por mês (${brl(-r.efeitoLiquidoAnual)} por ano)`
         : `a família tende a pagar ${brl(r.efeitoLiquidoMensal)} a mais por mês (${brl(r.efeitoLiquidoAnual)} por ano)`
 
+  const url = `#/raio-x?${q.toString()}`
   return {
     texto:
       `Raio-X aberto na tela: retrato do sistema pleno (2033) para consumo mensal de ${brl(consumo)} em ${uf}.` +
       ` Cesta: ${deltaMensalTexto(r.cesta.deltaMensal)}. Cashback: ${r.cashback.elegivel ? `${brl(r.cashback.totalMensal)}/mês de devolução` : 'família não elegível'}.` +
       ` Somando tudo, ${efeito}.`,
-    url: `#/raio-x?${q.toString()}`,
+    url,
+    cartao: {
+      ferramenta: 'Raio-X',
+      contexto: `sistema pleno · ${pessoas} ${pessoas === 1 ? 'pessoa' : 'pessoas'} · ${brl(consumo)}/mês · ${uf}`,
+      linhas: [
+        { rotulo: 'efeito na cesta', valor: brlComSinal(r.cesta.deltaMensal), nota: 'por mês' },
+        {
+          rotulo: 'cashback',
+          valor: r.cashback.elegivel ? `− ${brl(r.cashback.totalMensal)}` : 'sem direito',
+          nota: 'por mês',
+        },
+      ],
+      destaque: {
+        rotulo: 'saldo do mês',
+        valor: brlComSinal(r.efeitoLiquidoMensal),
+        tom: tomDoDelta(r.efeitoLiquidoMensal),
+      },
+      url,
+    },
   }
 }

@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { IA_URL } from '../ia/config'
 import { conversar, statusIa, IaDesligadaError, LimiteAtingidoError } from '../ia/cliente'
+import type { CartaoFerramenta } from '../ia/ferramentas'
+import { FORMULARIOS, executarFormulario, type IdFormulario, type ValoresForm } from '../ia/formularios'
 import type { MensagemApi } from '../ia/tipos'
+import { Mensagem, MarcaIa, RespostaEmCurso } from './chat/Mensagem'
+import { FormularioIa } from './chat/FormularioIa'
 
 const SUGESTOES = [
   'O que é o split payment?',
@@ -14,11 +18,20 @@ const SUGESTOES = [
  * A conversa vive no estado deste componente (montado no Shell, fora das
  * rotas) — navegar entre páginas não apaga o histórico. Quando a IA chama
  * a ferramenta da calculadora, a página abre preenchida ao lado do chat.
+ *
+ * Além de responder, a IA oferece o próximo passo: as respostas podem vir
+ * com convites que viram botões e abrem um formulário com os campos daquela
+ * simulação. Preenchidos, os valores vão direto ao motor do site — e a IA
+ * recebe os números prontos para comentar.
  */
 export function ChatIA() {
   const [aberto, setAberto] = useState(false)
   const [ligada, setLigada] = useState<boolean | null>(null)
   const [mensagens, setMensagens] = useState<MensagemApi[]>([])
+  const [cartoes, setCartoes] = useState<Record<string, CartaoFerramenta>>({})
+  const [formulario, setFormulario] = useState<IdFormulario | null>(null)
+  /** resposta ainda sendo escrita pelo modelo (fluxo SSE) */
+  const [parcial, setParcial] = useState('')
   const [texto, setTexto] = useState('')
   const [ocupado, setOcupado] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
@@ -30,18 +43,21 @@ export function ChatIA() {
 
   useEffect(() => {
     fimRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [mensagens, ocupado])
+  }, [mensagens, ocupado, formulario, parcial])
 
-  const enviar = async (pergunta: string) => {
-    const limpa = pergunta.trim()
-    if (!limpa || ocupado) return
-    setErro(null)
-    setTexto('')
-    const base: MensagemApi[] = [...mensagens, { role: 'user', content: limpa }]
-    setMensagens(base)
+  const guardarCartao = (chave: string, cartao: CartaoFerramenta) =>
+    setCartoes((c) => ({ ...c, [chave]: cartao }))
+
+  /** Roda o loop da IA a partir de um histórico já com a fala do visitante. */
+  const rodar = async (base: MensagemApi[]) => {
     setOcupado(true)
+    setErro(null)
     try {
-      const finais = await conversar(base, setMensagens)
+      const finais = await conversar(base, {
+        onEtapa: setMensagens,
+        onCartao: guardarCartao,
+        onTexto: setParcial,
+      })
       setMensagens(finais)
     } catch (e) {
       if (e instanceof IaDesligadaError) {
@@ -52,9 +68,39 @@ export function ChatIA() {
         setErro(e instanceof Error ? e.message : 'Algo deu errado. Tente novamente.')
       }
     } finally {
+      setParcial('')
       setOcupado(false)
     }
   }
+
+  const enviar = async (pergunta: string) => {
+    const limpa = pergunta.trim()
+    if (!limpa || ocupado) return
+    setTexto('')
+    setFormulario(null)
+    const base: MensagemApi[] = [...mensagens, { role: 'user', content: limpa }]
+    setMensagens(base)
+    await rodar(base)
+  }
+
+  /**
+   * Envio do formulário: o motor do site calcula aqui mesmo (a tela já abre
+   * preenchida e o cartão aparece na hora), e o modelo recebe os números
+   * prontos — cabe a ele só interpretar.
+   */
+  const enviarFormulario = async (id: IdFormulario, valores: ValoresForm) => {
+    if (ocupado) return
+    const envio = executarFormulario(FORMULARIOS[id], valores)
+    setFormulario(null)
+    if (envio.url) window.location.hash = envio.url.replace(/^#/, '')
+
+    const base: MensagemApi[] = [...mensagens, { role: 'user', content: envio.mensagem }]
+    if (envio.cartao) guardarCartao(`msg:${base.length - 1}`, envio.cartao)
+    setMensagens(base)
+    await rodar(base)
+  }
+
+  const ultimaIa = mensagens.reduce((ultima, m, i) => (m.role === 'assistant' ? i : ultima), -1)
 
   return (
     <>
@@ -84,7 +130,10 @@ export function ChatIA() {
       {aberto && (
         <section className="chat-painel" aria-label="Assistente de IA sobre a Reforma Tributária">
           <header className="chat-cab">
-            <p className="chat-titulo">Assistente da reforma</p>
+            <p className="chat-titulo">
+              <MarcaIa />
+              Assistente da reforma
+            </p>
             <span className="chat-selo mono">ia·beta</span>
           </header>
 
@@ -110,10 +159,39 @@ export function ChatIA() {
             )}
 
             {mensagens.map((m, i) => (
-              <Mensagem key={i} m={m} />
+              <Mensagem
+                key={i}
+                m={m}
+                indice={i}
+                cartoes={cartoes}
+                ultima={i === ultimaIa && !ocupado && !formulario}
+                onEscolherFormulario={setFormulario}
+                ocupado={ocupado}
+              />
             ))}
 
-            {ocupado && <p className="chat-pensando">pensando…</p>}
+            {formulario && (
+              <FormularioIa
+                spec={FORMULARIOS[formulario]}
+                ocupado={ocupado}
+                onCancelar={() => setFormulario(null)}
+                onEnviar={(valores) => void enviarFormulario(formulario, valores)}
+              />
+            )}
+
+            {parcial && <RespostaEmCurso texto={parcial} />}
+
+            {/* os pontinhos só até a primeira palavra chegar */}
+            {ocupado && !parcial && (
+              <p className="chat-pensando">
+                <span className="chat-pensando-pontos" aria-hidden>
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                pensando
+              </p>
+            )}
             {erro && <p className="chat-erro">{erro}</p>}
             <div ref={fimRef} />
           </div>
@@ -145,42 +223,6 @@ export function ChatIA() {
           </p>
         </section>
       )}
-    </>
-  )
-}
-
-function Mensagem({ m }: { m: MensagemApi }) {
-  if (m.role === 'user') {
-    // tool_results são internos do protocolo — não renderizar como fala do usuário
-    if (typeof m.content !== 'string') return null
-    return <p className="chat-msg chat-msg-user">{m.content}</p>
-  }
-  const blocos = typeof m.content === 'string' ? [{ type: 'text' as const, text: m.content }] : m.content
-  return (
-    <>
-      {blocos.map((b, i) => {
-        if (b.type === 'text' && b.text.trim()) {
-          return (
-            <p key={i} className="chat-msg chat-msg-ia">
-              {b.text}
-            </p>
-          )
-        }
-        if (b.type === 'tool_use') {
-          const rotulos: Record<string, string> = {
-            abrir_calculadora: 'abrindo a calculadora…',
-            abrir_cesta: 'montando a cesta mensal…',
-            abrir_cashback: 'simulando o cashback…',
-            abrir_raio_x: 'preparando o raio-X…',
-          }
-          return (
-            <p key={i} className="chat-tool mono">
-              → {rotulos[b.name] ?? 'consultando o site…'}
-            </p>
-          )
-        }
-        return null
-      })}
     </>
   )
 }

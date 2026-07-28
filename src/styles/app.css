@@ -557,8 +557,8 @@ select {
   right: 20px;
   bottom: 84px;
   z-index: 60;
-  width: min(380px, calc(100vw - 32px));
-  max-height: min(560px, calc(100vh - 120px));
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(620px, calc(100vh - 120px));
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -579,6 +579,9 @@ select {
 }
 
 .chat-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 700;
   font-size: 0.9375rem;
 }
@@ -602,12 +605,12 @@ select {
 
 .chat-msgs {
   flex: 1;
-  min-height: 180px;
+  min-height: 200px;
   overflow-y: auto;
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .chat-vazio {
@@ -640,24 +643,433 @@ select {
   border-bottom-right-radius: 4px;
 }
 
+/* A fala da IA não é bolha: ocupa a largura toda, ancorada pela marca à
+   esquerda e separada por filete — leitura de documento, não de mensageiro. */
 .chat-msg-ia {
-  align-self: flex-start;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-bottom-left-radius: 4px;
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  overflow-wrap: break-word;
 }
 
-.chat-tool {
-  align-self: flex-start;
-  font-size: 0.75rem;
+.chat-msg-ia:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.chat-msg-ia-marca {
+  display: grid;
+  place-items: center;
+  height: 1.55em;
   color: var(--petrol-bright);
 }
 
+.chat-msg-ia-corpo {
+  min-width: 0;
+}
+
+/* cursor de escrita: some sozinho quando o fluxo fecha e a mensagem assenta */
+.chat-msg-ia-fluindo .chat-msg-ia-corpo > :last-child::after {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 0.95em;
+  margin-left: 2px;
+  vertical-align: -0.12em;
+  background: var(--petrol-bright);
+  animation: ia-cursor 1s step-end infinite;
+}
+
+@keyframes ia-cursor {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* o que não vem escrito letra a letra entra com um respiro, não de estalo */
+.ia-cartao,
+.ia-convites,
+.ia-form {
+  animation: ia-entra 220ms var(--saida, ease-out) both;
+}
+
+@keyframes ia-entra {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ia-paragrafo + .ia-paragrafo,
+.ia-paragrafo + .ia-lista,
+.ia-lista + .ia-paragrafo {
+  margin-top: 0.7em;
+}
+
+.ia-lista {
+  display: grid;
+  gap: 3px;
+  padding-left: 2px;
+  list-style: none;
+}
+
+.ia-lista li {
+  padding-left: 14px;
+  position: relative;
+}
+
+.ia-lista li::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: 0.66em;
+  width: 5px;
+  height: 1px;
+  background: var(--line-forte);
+}
+
+/* valores em R$ e % vestem a fonte de dados do projeto */
+.ia-dado {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9375em;
+  letter-spacing: -0.01em;
+}
+
+.chat-tool {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.chat-tool-barra {
+  width: 22px;
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(90deg, var(--petrol-bright) 40%, var(--line) 40%);
+  background-size: 250% 100%;
+  animation: ia-corre 1.1s linear infinite;
+}
+
+@keyframes ia-corre {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
 .chat-pensando {
-  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.8125rem;
   color: var(--muted);
-  font-style: italic;
+}
+
+.chat-pensando-pontos {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.chat-pensando-pontos i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--petrol-bright);
+  animation: ia-pulsa 1.1s ease-in-out infinite;
+}
+
+.chat-pensando-pontos i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.chat-pensando-pontos i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes ia-pulsa {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---- cartão de resultado: a simulação fica no histórico da conversa ---- */
+.ia-cartao {
+  margin-top: 10px;
+  border: 1px solid var(--line-forte);
+  border-radius: var(--raio-s);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.ia-cartao-cab {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 11px;
+  background: var(--petrol-wash);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.625rem;
+  color: var(--ink);
+}
+
+.ia-cartao-nome {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.ia-cartao-ctx {
+  color: var(--muted);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.ia-cartao-linhas {
+  display: grid;
+  gap: 5px;
+  padding: 9px 11px;
+}
+
+.ia-cartao-linhas > div {
+  display: grid;
+  grid-template-columns: 1fr auto minmax(3.4em, auto);
+  gap: 10px;
+  align-items: baseline;
+  font-size: 0.8125rem;
+}
+
+.ia-cartao-linhas dt {
+  color: var(--muted);
+}
+
+.ia-cartao-linhas dd {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ia-cartao-nota {
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+
+.ia-cartao-destaque {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border-top: 1px solid var(--line);
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.ia-cartao-destaque strong {
+  font-size: 1.0625rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ia-cartao-ganho .ia-cartao-destaque strong {
+  color: var(--petrol);
+}
+
+:root[data-tema='escuro'] .ia-cartao-ganho .ia-cartao-destaque strong {
+  color: var(--petrol-bright);
+}
+
+.ia-cartao-perda .ia-cartao-destaque strong {
+  color: var(--copper-deep);
+}
+
+.ia-cartao-link {
+  display: block;
+  width: 100%;
+  padding: 8px 11px;
+  border-top: 1px solid var(--line);
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--petrol);
+  transition: background 150ms var(--saida, ease-out);
+}
+
+:root[data-tema='escuro'] .ia-cartao-link {
+  color: var(--petrol-bright);
+}
+
+.ia-cartao-link:hover {
+  background: var(--surface);
+}
+
+/* ---- convites: o que ela se oferece para fazer em seguida ---- */
+.ia-convites {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 9px 10px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--raio-s);
+  background: var(--surface);
+}
+
+.ia-convites-titulo {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.ia-convite {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+  padding: 7px 9px;
+  border: 1px solid var(--line-forte);
+  border-radius: var(--raio-s);
+  background: var(--bg);
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+  transition: border-color 150ms var(--saida, ease-out), background 150ms var(--saida, ease-out);
+}
+
+.ia-convite > span {
+  color: var(--petrol);
+}
+
+:root[data-tema='escuro'] .ia-convite > span {
+  color: var(--petrol-bright);
+}
+
+.ia-convite:hover:not(:disabled) {
+  border-color: var(--petrol-bright);
+  background: var(--petrol-wash);
+}
+
+.ia-convite:disabled {
+  opacity: 0.55;
+}
+
+/* ---- mini-formulário aberto dentro da conversa ---- */
+.ia-form {
+  align-self: stretch;
+  border: 1px solid var(--line-forte);
+  border-radius: var(--raio-s);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.ia-form-cab {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 8px;
+  padding: 10px 12px;
+  background: var(--petrol-wash);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.875rem;
+  color: var(--ink);
+}
+
+.ia-form-marca {
+  display: grid;
+  place-items: center;
+  height: 1.4em;
+  color: var(--petrol-bright);
+}
+
+.ia-form-resumo {
+  grid-column: 2;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.ia-form-campos {
+  display: grid;
+  gap: 7px;
+  padding: 11px 12px;
+}
+
+.ia-campo {
+  display: grid;
+  grid-template-columns: 1fr 122px;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.ia-campo-simnao {
+  grid-template-columns: 1fr auto;
+}
+
+.ia-campo-rotulo {
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+/* controles em escala de chat — os da página são grandes demais aqui */
+.ia-campo select {
+  font-size: 0.8125rem;
+  padding: 6px 8px;
+}
+
+.ia-campo .entrada-prefixo {
+  padding-left: 9px;
+  font-size: 0.75rem;
+}
+
+.ia-campo .entrada-num input {
+  font-size: 0.8125rem;
+  padding: 6px 9px;
+}
+
+.ia-campo .segmentado button {
+  padding: 4px 12px;
+  font-size: 0.8125rem;
+}
+
+.ia-form-acoes {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+
+.ia-form-cancelar {
+  padding: 7px 10px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.ia-form-cancelar:hover:not(:disabled) {
+  color: var(--ink);
 }
 
 .chat-erro {
