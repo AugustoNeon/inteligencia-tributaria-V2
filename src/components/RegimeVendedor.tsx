@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useMeasure } from './charts/useMeasure'
 import { Callout, Campo, EntradaNumero, Segmentado, Selo } from './ui/kit'
 import { LIMITES_REGIME, compararCredito, opcoesDoVendedor } from '../lib/regime'
@@ -10,16 +11,44 @@ import { brl, pct } from '../lib/format'
  * produtor rural, regime regular) e o crédito que cada escolha
  * transfere a clientes empresas.
  */
+/** faixa aceita para a parcela de CBS/IBS dentro do DAS (mesma do campo) */
+const dasValido = (v: number) => Number.isFinite(v) && v >= 0 && v <= 15
+
 export function RegimeVendedor({ aliquotaIva, categoriaRotulo }: { aliquotaIva: number; categoriaRotulo: string }) {
-  const [receita, setReceita] = useState(120_000)
-  const [rural, setRural] = useState<'nao' | 'sim'>('nao')
-  const [dasPct, setDasPct] = useState(3)
+  // estado inicial pode vir da URL — o assistente preenche esta seção por ela
+  const [params] = useSearchParams()
+  const [receita, setReceita] = useState(() => {
+    const v = Number(params.get('rec'))
+    return Number.isFinite(v) && v > 0 ? v : 120_000
+  })
+  const [rural, setRural] = useState<'nao' | 'sim'>(() => (params.get('rural') === 'sim' ? 'sim' : 'nao'))
+  const [dasPct, setDasPct] = useState(() => {
+    const v = Number(params.get('das'))
+    return dasValido(v) ? v : 3
+  })
+  const secaoRef = useRef<HTMLDivElement>(null)
+
+  // com a página já aberta, um link novo (do chat ou compartilhado) re-sincroniza
+  useEffect(() => {
+    const r = Number(params.get('rec'))
+    if (Number.isFinite(r) && r > 0) setReceita(r)
+    const ru = params.get('rural')
+    if (ru === 'sim' || ru === 'nao') setRural(ru)
+    const d = Number(params.get('das'))
+    if (params.get('das') !== null && dasValido(d)) setDasPct(d)
+  }, [params])
+
+  // a seção mora no fim de uma página longa: quem chega por link vai até ela
+  useEffect(() => {
+    if (params.get('rec') === null) return
+    secaoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [params])
 
   const opcoes = opcoesDoVendedor(receita, rural === 'sim').filter((o) => o.disponivel)
   const credito = compararCredito(1000, aliquotaIva, dasPct / 100)
 
   return (
-    <div className="regime-grid">
+    <div className="regime-grid" ref={secaoRef}>
       <aside className="regime-form">
         <Campo label="Receita anual do negócio" sufixo="R$/ano">
           <EntradaNumero valor={receita} onMudar={setReceita} min={0} passo={10_000} prefixo="R$" />

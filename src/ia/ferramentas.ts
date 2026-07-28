@@ -20,6 +20,7 @@ import { simularCesta } from '../lib/cesta-mensal'
 import { comparar } from '../lib/engine'
 import { brl, pct } from '../lib/format'
 import { simularPainel } from '../lib/painel'
+import { compararCredito, opcoesDoVendedor } from '../lib/regime'
 
 export interface LinhaCartao {
   rotulo: string
@@ -55,6 +56,7 @@ export function executarFerramenta(nome: string, input: Record<string, unknown>)
   if (nome === 'abrir_cesta') return abrirCesta(input)
   if (nome === 'abrir_cashback') return abrirCashback(input)
   if (nome === 'abrir_raio_x') return abrirRaioX(input)
+  if (nome === 'abrir_regime') return abrirRegime(input)
   return { texto: `Ferramenta desconhecida: ${nome}. Responda sem ferramenta.` }
 }
 
@@ -266,6 +268,61 @@ function abrirCashback(input: Record<string, unknown>): ResultadoFerramenta {
       destaque: r.elegivel
         ? { rotulo: 'devolução', valor: `${brl(r.totalMensal)}/mês`, tom: 'ganho' }
         : { rotulo: 'devolução', valor: 'sem direito', tom: 'neutro' },
+      url,
+    },
+  }
+}
+
+/**
+ * O outro lado do balcão: onde QUEM VENDE se encaixa no novo sistema. Abre a
+ * seção "Para quem vende" da Calculadora — a única do site com campos que o
+ * assistente ainda não alcançava.
+ */
+function abrirRegime(input: Record<string, unknown>): ResultadoFerramenta {
+  const receita = Number(input.receita)
+  if (!Number.isFinite(receita) || receita < 0 || receita > 1_000_000_000) {
+    return { texto: 'Erro: "receita" precisa ser a receita ANUAL do negócio em reais (número maior ou igual a zero).' }
+  }
+
+  const categoria = CATEGORIAS.find((c) => c.id === input.categoria) ?? CATEGORIAS.find((c) => c.id === 'produto-padrao')!
+  const rural = input.rural === true
+  const das = Math.min(numeroOu(input.das, 3), 15)
+
+  // a alíquota efetiva de IVA sai do mesmo motor que a página usa
+  const aliquotaIva = comparar(1000, categoria, categoria.atual, 2033).aliquotaIvaEfetiva
+  const opcoes = opcoesDoVendedor(receita, rural).filter((o) => o.disponivel)
+  const credito = compararCredito(1000, aliquotaIva, das / 100)
+  const natural = opcoes[0]
+
+  const q = new URLSearchParams({
+    cat: categoria.id,
+    ano: '2033',
+    rec: String(receita),
+    rural: rural ? 'sim' : 'nao',
+    das: String(das),
+  })
+  const url = `#/calculadora?${q.toString()}`
+
+  return {
+    texto:
+      `Seção "Para quem vende" aberta na tela (receita de ${brl(receita)} por ano${rural ? ', atividade rural' : ''}, categoria ${categoria.rotulo}).` +
+      ` Regimes disponíveis: ${opcoes.map((o) => `${o.rotulo} (${o.dentroDoIva ? 'dentro' : 'fora'} do IVA)`).join('; ')}.` +
+      ` Enquadramento natural pela receita: ${natural.rotulo}.` +
+      ` Numa venda de ${brl(1000)} a cliente PJ, o crédito de CBS/IBS transferido é de ${brl(credito.porDentro)} recolhendo por dentro do DAS (${pct(das / 100)} da receita) contra ${brl(credito.porFora)} no regime regular — diferença de ${brl(credito.diferenca)}.` +
+      ` A alíquota efetiva de IVA da categoria é ${pct(aliquotaIva)}.`,
+    url,
+    cartao: {
+      ferramenta: 'Para quem vende',
+      contexto: `${brl(receita)}/ano · ${categoria.rotulo}${rural ? ' · rural' : ''}`,
+      linhas: [
+        { rotulo: 'crédito por dentro do DAS', valor: brl(credito.porDentro), nota: 'p/ R$ 1.000' },
+        { rotulo: 'crédito no regime regular', valor: brl(credito.porFora), nota: 'p/ R$ 1.000' },
+      ],
+      destaque: {
+        rotulo: natural.dentroDoIva ? 'enquadramento · dentro do IVA' : 'enquadramento · fora do IVA',
+        valor: natural.rotulo,
+        tom: 'neutro',
+      },
       url,
     },
   }

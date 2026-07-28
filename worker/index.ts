@@ -128,6 +128,28 @@ const FERRAMENTAS: Anthropic.Messages.Tool[] = [
       required: ['pessoas', 'renda', 'cadunico'],
     },
   },
+  {
+    name: 'abrir_regime',
+    description:
+      'Abre a seção "Para quem vende" da Calculadora, preenchida, e devolve onde a receita do negócio se encaixa (nanoempreendedor, MEI, produtor rural, Simples por dentro ou por fora, regime regular) e quanto crédito de CBS/IBS cada caminho transfere a um cliente empresa. Use quando quem pergunta VENDE — tem empresa, é MEI, autônomo, produtor rural — e quer saber seu enquadramento ou o efeito no crédito dos clientes. Se faltar a receita anual, pergunte antes de chamar.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        receita: { type: 'number', description: 'Receita ANUAL do negócio em R$ (ex.: 120000)' },
+        categoria: {
+          type: 'string',
+          enum: CATEGORIAS.map((c) => c.id),
+          description: 'Id da categoria do que ele vende (opcional; padrão produto-padrao)',
+        },
+        rural: { type: 'boolean', description: 'É produtor rural? (opcional; padrão false)' },
+        das: {
+          type: 'number',
+          description: 'Parcela de CBS/IBS dentro do DAS do Simples, em % da receita (opcional; padrão 3)',
+        },
+      },
+      required: ['receita'],
+    },
+  },
 ]
 
 /* ---------------------------------- infra ---------------------------------- */

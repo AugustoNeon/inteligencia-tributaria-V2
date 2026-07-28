@@ -2,16 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import { IA_URL } from '../ia/config'
 import { conversar, statusIa, IaDesligadaError, LimiteAtingidoError } from '../ia/cliente'
 import type { CartaoFerramenta } from '../ia/ferramentas'
-import { FORMULARIOS, executarFormulario, type IdFormulario, type ValoresForm } from '../ia/formularios'
+import { FORMULARIOS, ORDEM_INICIO, executarFormulario, type IdFormulario, type ValoresForm } from '../ia/formularios'
 import type { MensagemApi } from '../ia/tipos'
 import { Mensagem, MarcaIa, RespostaEmCurso } from './chat/Mensagem'
 import { FormularioIa } from './chat/FormularioIa'
 
-const SUGESTOES = [
-  'O que é o split payment?',
-  'Quanto custará um tênis de R$ 300 em 2030?',
-  'Minha família tem direito ao cashback?',
-]
+/**
+ * Perguntas de partida — só as conceituais. As que terminariam em conta viraram
+ * botões de simulação, que abrem o formulário direto: mais rápido para quem
+ * pergunta e sem gastar uma ida à API para descobrir o que ele já sabia querer.
+ */
+const SUGESTOES = ['O que é o split payment?', 'O que muda para mim em 2027?']
 
 /**
  * Assistente flutuante: botão no canto da tela, painel de chat.
@@ -145,9 +146,19 @@ export function ChatIA() {
           )}
 
           <div className="chat-msgs" role="log" aria-live="polite">
-            {mensagens.length === 0 && ligada !== false && (
+            {mensagens.length === 0 && ligada !== false && !formulario && (
               <div className="chat-vazio">
-                <p>Pergunte sobre a Reforma Tributária — e quando fizer sentido, eu abro a calculadora pra você.</p>
+                <p>Pergunte sobre a Reforma Tributária — ou escolha uma conta e eu preencho a página pra você.</p>
+
+                <div className="ia-convites">
+                  <p className="ia-convites-titulo mono">posso calcular para você</p>
+                  {ORDEM_INICIO.map((id) => (
+                    <button key={id} className="ia-convite" onClick={() => setFormulario(id)} disabled={ocupado}>
+                      <span aria-hidden>▸</span> {FORMULARIOS[id].convite}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="chat-sugestoes">
                   {SUGESTOES.map((s) => (
                     <button key={s} className="chip" onClick={() => void enviar(s)} disabled={ocupado}>

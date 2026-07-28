@@ -4,6 +4,7 @@ import { simularCesta } from '../lib/cesta-mensal'
 import {
   FORMULARIOS,
   MARCA_MOTOR,
+  ORDEM_INICIO,
   executarFormulario,
   falaVisivel,
   montarEntrada,
@@ -23,6 +24,16 @@ describe('especificações', () => {
     const entrada = montarEntrada(spec, valoresIniciais(spec))
     expect(entrada.perfil).toBe('familiar')
     expect(spec.campos.filter((c) => c.tipo === 'numero')).toHaveLength(CESTA_PADRAO.length)
+  })
+
+  it('toda simulação se oferece no início, sem sobra nem falta', () => {
+    expect([...ORDEM_INICIO].sort()).toEqual(Object.keys(FORMULARIOS).sort())
+    for (const id of ORDEM_INICIO) {
+      const convite = FORMULARIOS[id].convite
+      expect(convite, id).toBeTruthy()
+      // cabe no botão do painel sem quebrar em três linhas
+      expect(convite.length, `${id}: "${convite}"`).toBeLessThanOrEqual(42)
+    }
   })
 
   it('ano vai como número (a ferramenta valida contra ANOS_SIMULAVEIS)', () => {

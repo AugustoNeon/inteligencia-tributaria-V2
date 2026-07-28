@@ -5,6 +5,7 @@ import { CESTA_PADRAO, PERFIS_CESTA } from '../data/cesta'
 import { icmsDaUf } from '../data/icmsUf'
 import { simularCesta } from '../lib/cesta-mensal'
 import { simularPainel } from '../lib/painel'
+import { compararCredito } from '../lib/regime'
 import { executarFerramenta } from './ferramentas'
 
 describe('abrir_calculadora', () => {
@@ -104,6 +105,48 @@ describe('abrir_cashback', () => {
     const r = executarFerramenta('abrir_cashback', { pessoas: 4, renda: 2800 })
     expect(r.url).toBeUndefined()
     expect(r.texto).toContain('cadunico')
+  })
+})
+
+describe('abrir_regime', () => {
+  it('receita baixa: nanoempreendedor entra na lista e fica FORA do IVA', () => {
+    const r = executarFerramenta('abrir_regime', { receita: 30_000 })
+    expect(r.texto).toContain('Nanoempreendedor')
+    expect(r.cartao?.destaque.valor).toBe('Nanoempreendedor')
+    expect(r.cartao?.destaque.rotulo).toContain('fora do IVA')
+    expect(r.url).toContain('rec=30000')
+  })
+
+  it('acima do teto do Simples sobra só o regime regular', () => {
+    const r = executarFerramenta('abrir_regime', { receita: 6_000_000 })
+    expect(r.cartao?.destaque.valor).toBe('Regime regular')
+    expect(r.texto).not.toContain('Nanoempreendedor')
+  })
+
+  it('atividade rural abre a opção de não contribuinte', () => {
+    const semRural = executarFerramenta('abrir_regime', { receita: 1_000_000 })
+    const comRural = executarFerramenta('abrir_regime', { receita: 1_000_000, rural: true })
+    expect(semRural.texto).not.toContain('Produtor rural')
+    expect(comRural.texto).toContain('Produtor rural')
+    expect(comRural.url).toContain('rural=sim')
+  })
+
+  it('os números do crédito vêm do lib/regime, não de conta própria', () => {
+    const categoria = CATEGORIAS.find((c) => c.id === 'produto-padrao')!
+    const aliquota = comparar(1000, categoria, categoria.atual, 2033).aliquotaIvaEfetiva
+    const esperado = compararCredito(1000, aliquota, 0.03)
+    const r = executarFerramenta('abrir_regime', { receita: 120_000, categoria: 'produto-padrao', das: 3 })
+    expect(r.texto).toContain(esperado.porFora.toFixed(2).replace('.', ','))
+    expect(r.cartao?.linhas.some((l) => l.valor.includes(esperado.porDentro.toFixed(2).replace('.', ',')))).toBe(true)
+  })
+
+  it('receita ausente ou negativa vira erro corrigível, sem cartão', () => {
+    for (const input of [{}, { receita: -1 }, { receita: 'muito' }]) {
+      const r = executarFerramenta('abrir_regime', input)
+      expect(r.url).toBeUndefined()
+      expect(r.cartao).toBeUndefined()
+      expect(r.texto).toContain('receita')
+    }
   })
 })
 

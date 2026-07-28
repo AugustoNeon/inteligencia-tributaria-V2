@@ -19,7 +19,7 @@ import { ANOS_SIMULAVEIS } from '../data/transicao'
 import { brl } from '../lib/format'
 import { executarFerramenta, type CartaoFerramenta } from './ferramentas'
 
-export type IdFormulario = 'calculadora' | 'cesta' | 'cashback' | 'raio-x'
+export type IdFormulario = 'calculadora' | 'cesta' | 'cashback' | 'raio-x' | 'regime'
 
 export type CampoIa =
   | { tipo: 'numero'; id: string; rotulo: string; prefixo?: string; padrao: number; passo?: number }
@@ -36,6 +36,12 @@ export interface EspecFormulario {
   ferramenta: string
   /** rótulo do botão de envio */
   acao: string
+  /**
+   * Como esta simulação se oferece no início da conversa, na voz do visitante.
+   * A IA escreve o convite dela no meio do papo; este é o de partida, quando
+   * ainda não há assunto do qual puxar um.
+   */
+  convite: string
   campos: CampoIa[]
 }
 
@@ -70,6 +76,7 @@ export const FORMULARIOS: Record<IdFormulario, EspecFormulario> = {
     resumo: 'Compara o que a família paga de imposto embutido hoje e no ano escolhido.',
     ferramenta: 'abrir_cesta',
     acao: 'Calcular minha cesta',
+    convite: 'Calcular as despesas da minha família',
     campos: [
       ...CESTA_PADRAO.map(
         (item): CampoIa => ({
@@ -92,6 +99,7 @@ export const FORMULARIOS: Record<IdFormulario, EspecFormulario> = {
     resumo: 'Verifica a elegibilidade e estima a devolução mensal de CBS e IBS.',
     ferramenta: 'abrir_cashback',
     acao: 'Ver minha devolução',
+    convite: 'Ver se tenho direito ao cashback',
     campos: [
       ...CAMPOS_FAMILIA,
       { tipo: 'numero', id: 'energia', rotulo: 'Conta de luz', prefixo: 'R$', padrao: 180, passo: 10 },
@@ -108,6 +116,7 @@ export const FORMULARIOS: Record<IdFormulario, EspecFormulario> = {
     resumo: 'Junta o efeito na cesta e o cashback num saldo só: ganha ou perde no fim do mês.',
     ferramenta: 'abrir_raio_x',
     acao: 'Ver meu saldo em 2033',
+    convite: 'Descobrir se ganho ou perco em 2033',
     campos: [
       ...CAMPOS_FAMILIA,
       { tipo: 'numero', id: 'consumo', rotulo: 'Consumo do mês (tudo que compram)', prefixo: 'R$', padrao: 2240, passo: 50 },
@@ -121,6 +130,7 @@ export const FORMULARIOS: Record<IdFormulario, EspecFormulario> = {
     resumo: 'Compara o preço de hoje com o do ano escolhido, pela categoria do produto.',
     ferramenta: 'abrir_calculadora',
     acao: 'Comparar o preço',
+    convite: 'Calcular o preço de um produto',
     campos: [
       { tipo: 'numero', id: 'preco', rotulo: 'Preço de hoje', prefixo: 'R$', padrao: 300, passo: 10 },
       { tipo: 'escolha', id: 'categoria', rotulo: 'Categoria', opcoes: OPCOES_CATEGORIA, padrao: 'produto-padrao' },
@@ -128,7 +138,25 @@ export const FORMULARIOS: Record<IdFormulario, EspecFormulario> = {
       { tipo: 'escolha', id: 'uf', rotulo: 'Seu estado', opcoes: OPCOES_UF, padrao: UF_PADRAO },
     ],
   },
+
+  regime: {
+    id: 'regime',
+    titulo: 'O seu negócio no novo sistema',
+    resumo: 'Mostra onde a sua receita se encaixa e quanto crédito cada regime passa ao cliente PJ.',
+    ferramenta: 'abrir_regime',
+    acao: 'Ver meu enquadramento',
+    convite: 'Descobrir meu regime como vendedor',
+    campos: [
+      { tipo: 'numero', id: 'receita', rotulo: 'Receita do negócio por ano', prefixo: 'R$', padrao: 120_000, passo: 10_000 },
+      { tipo: 'escolha', id: 'categoria', rotulo: 'O que você vende', opcoes: OPCOES_CATEGORIA, padrao: 'produto-padrao' },
+      { tipo: 'simNao', id: 'rural', rotulo: 'É atividade rural?', padrao: false },
+      { tipo: 'numero', id: 'das', rotulo: 'CBS/IBS dentro do seu DAS (%)', padrao: 3, passo: 0.5 },
+    ],
+  },
 }
+
+/** Ordem em que as simulações se oferecem no início da conversa. */
+export const ORDEM_INICIO: IdFormulario[] = ['calculadora', 'cesta', 'cashback', 'raio-x', 'regime']
 
 export const ehIdFormulario = (v: string): v is IdFormulario => v in FORMULARIOS
 
