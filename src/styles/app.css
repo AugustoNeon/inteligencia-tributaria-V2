@@ -613,6 +613,13 @@ select {
   gap: 10px;
 }
 
+/* O transcrito rola; ele não se espreme. Sem isto, filho de flex encolhe por
+   padrão e, passada a altura do painel, a conversa é achatada em vez de
+   ganhar barra de rolagem — o formulário chegava a virar uma fresta. */
+.chat-msgs > * {
+  flex-shrink: 0;
+}
+
 .chat-vazio {
   display: grid;
   gap: 12px;
