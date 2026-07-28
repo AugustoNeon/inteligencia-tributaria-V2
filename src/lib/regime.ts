@@ -79,6 +79,20 @@ export function opcoesDoVendedor(receitaAnual: number, produtorRural = false): O
   ]
 }
 
+/** faixa aceita para a parcela de CBS/IBS dentro do DAS */
+export const DAS_MAX_PCT = 15
+
+/**
+ * Parcela de CBS/IBS no DAS vinda da URL, ou null quando ausente ou fora da
+ * faixa. Cuidado com o zero: `Number(null)` é 0, que passaria numa checagem
+ * só de faixa e zeraria o campo em todo link que não trouxesse o parâmetro.
+ */
+export function dasDaUrl(bruto: string | null): number | null {
+  if (bruto === null || bruto.trim() === '') return null
+  const v = Number(bruto)
+  return Number.isFinite(v) && v >= 0 && v <= DAS_MAX_PCT ? v : null
+}
+
 export interface ComparativoCredito {
   /** crédito integral: IBS/CBS destacados por fora no regime regular */
   porFora: number

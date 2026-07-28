@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useMeasure } from './charts/useMeasure'
 import { Callout, Campo, EntradaNumero, Segmentado, Selo } from './ui/kit'
-import { LIMITES_REGIME, compararCredito, opcoesDoVendedor } from '../lib/regime'
+import { DAS_MAX_PCT, LIMITES_REGIME, compararCredito, dasDaUrl, opcoesDoVendedor } from '../lib/regime'
 import { brl, pct } from '../lib/format'
 
 /**
@@ -11,8 +11,6 @@ import { brl, pct } from '../lib/format'
  * produtor rural, regime regular) e o crédito que cada escolha
  * transfere a clientes empresas.
  */
-/** faixa aceita para a parcela de CBS/IBS dentro do DAS (mesma do campo) */
-const dasValido = (v: number) => Number.isFinite(v) && v >= 0 && v <= 15
 
 export function RegimeVendedor({ aliquotaIva, categoriaRotulo }: { aliquotaIva: number; categoriaRotulo: string }) {
   // estado inicial pode vir da URL — o assistente preenche esta seção por ela
@@ -22,10 +20,7 @@ export function RegimeVendedor({ aliquotaIva, categoriaRotulo }: { aliquotaIva: 
     return Number.isFinite(v) && v > 0 ? v : 120_000
   })
   const [rural, setRural] = useState<'nao' | 'sim'>(() => (params.get('rural') === 'sim' ? 'sim' : 'nao'))
-  const [dasPct, setDasPct] = useState(() => {
-    const v = Number(params.get('das'))
-    return dasValido(v) ? v : 3
-  })
+  const [dasPct, setDasPct] = useState(() => dasDaUrl(params.get('das')) ?? 3)
   const secaoRef = useRef<HTMLDivElement>(null)
 
   // com a página já aberta, um link novo (do chat ou compartilhado) re-sincroniza
@@ -34,8 +29,8 @@ export function RegimeVendedor({ aliquotaIva, categoriaRotulo }: { aliquotaIva: 
     if (Number.isFinite(r) && r > 0) setReceita(r)
     const ru = params.get('rural')
     if (ru === 'sim' || ru === 'nao') setRural(ru)
-    const d = Number(params.get('das'))
-    if (params.get('das') !== null && dasValido(d)) setDasPct(d)
+    const d = dasDaUrl(params.get('das'))
+    if (d !== null) setDasPct(d)
   }, [params])
 
   // a seção mora no fim de uma página longa: quem chega por link vai até ela
@@ -69,7 +64,7 @@ export function RegimeVendedor({ aliquotaIva, categoriaRotulo }: { aliquotaIva: 
           sufixo="% da receita"
           dica="Parcela da guia do Simples que corresponde a CBS/IBS — depende do anexo e da faixa; 3% é ilustrativo"
         >
-          <EntradaNumero valor={dasPct} onMudar={setDasPct} min={0} max={15} passo={0.5} />
+          <EntradaNumero valor={dasPct} onMudar={setDasPct} min={0} max={DAS_MAX_PCT} passo={0.5} />
         </Campo>
       </aside>
 

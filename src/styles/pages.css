@@ -246,52 +246,109 @@
   color: var(--muted);
 }
 
-/* ferramentas */
-.ferramentas {
+/* ============ índice do atlas (Home) ============
+   Uma malha só para as duas famílias: os rótulos atravessam a largura toda e
+   as nove entradas caem no MESMO ritmo de colunas. Em grades separadas cada
+   família resolveria a própria contagem (4 colunas contra 5) e os glifos não
+   se alinhariam de uma para a outra. */
+.indice {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 0 40px;
-  border-top: 1px solid var(--line);
+  grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+  gap: 0 4px;
 }
 
-.ferramenta {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas: 'titulo seta' 'desc seta';
-  gap: 2px 16px;
-  align-items: center;
-  padding: 18px 4px;
-  border-bottom: 1px solid var(--line);
-  text-decoration: none;
-  color: var(--ink);
-  transition: background 150ms ease-out;
+.indice-familia {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--line-forte);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 }
 
-.ferramenta:hover {
-  background: var(--surface);
+.indice-item + .indice-familia {
+  margin-top: 30px;
 }
 
-.ferramenta-titulo {
-  grid-area: titulo;
-  font-weight: 700;
-  font-size: 1.0625rem;
-}
-
-.ferramenta-desc {
-  grid-area: desc;
-  font-size: 0.9075rem;
+.indice-conta {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--muted);
 }
 
-.ferramenta-seta {
-  grid-area: seta;
-  font-size: 1.25rem;
-  color: var(--petrol-bright);
-  transition: transform 180ms var(--saida);
+.indice-item {
+  display: block;
+  padding: 18px 14px 20px;
+  margin-left: -14px;
+  border-radius: var(--raio-s);
+  text-decoration: none;
+  color: var(--ink);
+  transition: background 150ms var(--saida);
 }
 
-.ferramenta:hover .ferramenta-seta {
-  transform: translateX(4px);
+.indice-item:hover {
+  background: var(--surface);
+}
+
+.indice-titulo {
+  display: block;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.indice-desc {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.indice-informa {
+  display: block;
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+  font-size: 0.625rem;
+  color: var(--muted);
+}
+
+.indice-informa b {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--petrol);
+}
+
+:root[data-tema='escuro'] .indice-informa b {
+  color: var(--petrol-bright);
+}
+
+/* o glifo herda o estado do link: cinza em repouso, petróleo ao passar */
+.glifo {
+  display: block;
+  margin-bottom: 11px;
+  color: var(--muted);
+  transition: color 150ms var(--saida);
+}
+
+.indice-item:hover .glifo {
+  color: var(--petrol);
+}
+
+:root[data-tema='escuro'] .indice-item:hover .glifo {
+  color: var(--petrol-bright);
 }
 
 .fontes-grade {

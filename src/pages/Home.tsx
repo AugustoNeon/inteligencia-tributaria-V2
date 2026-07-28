@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { StackedArea } from '../components/charts/StackedArea'
 import { VizPanel } from '../components/charts/VizPanel'
+import { Glifo, type TipoGlifo } from '../components/ui/Glifo'
 import { Selo, SourceLink } from '../components/ui/kit'
 import { CORES } from '../data/tributos'
 import { NOVIDADES, RADAR_VERIFICADO_EM } from '../data/novidades'
@@ -93,48 +94,103 @@ function DiagramaFusao() {
   )
 }
 
-const FERRAMENTAS = [
+/**
+ * O índice do atlas, em duas famílias: metade das páginas explica a reforma,
+ * metade calcula o efeito dela. A distinção sempre existiu no site e nunca
+ * tinha sido dita — é a informação mais útil que este bloco pode dar a quem
+ * chega. Nas ferramentas, `informa` declara o custo de entrada: dá para
+ * escolher entre um clique e um formulário antes de clicar.
+ */
+interface EntradaIndice {
+  para: string
+  titulo: string
+  desc: string
+  glifo: TipoGlifo
+  /** o que o visitante precisa ter em mãos — só nas ferramentas */
+  informa?: string
+}
+
+const PARA_ENTENDER: EntradaIndice[] = [
   {
     para: '/guia',
     titulo: 'Guia da reforma',
-    desc: 'O que muda, por que muda e onde está escrito — com as leis anexadas.',
+    desc: 'O que muda, por que muda e onde está escrito, com as leis anexadas.',
+    glifo: 'guia',
   },
   {
     para: '/linha-do-tempo',
-    titulo: 'Linha do tempo 2023 → 2033',
-    desc: 'A transição ano a ano, com o gráfico da extinção do sistema antigo.',
+    titulo: 'Linha do tempo',
+    desc: 'A transição de 2023 a 2033, ano a ano, com o marcador “você está aqui”.',
+    glifo: 'tempo',
   },
+  {
+    para: '/setores',
+    titulo: 'Impacto por setor',
+    desc: 'Quem tende a pagar mais, quem tende a pagar menos, e por quê.',
+    glifo: 'setores',
+  },
+  {
+    para: '/glossario',
+    titulo: 'Glossário e fontes',
+    desc: 'Termos pesquisáveis e a biblioteca de documentos oficiais.',
+    glifo: 'glossario',
+  },
+]
+
+const PARA_SIMULAR: EntradaIndice[] = [
   {
     para: '/calculadora',
     titulo: 'Calculadora comparativa',
-    desc: 'Quanto custa hoje × quanto custará: simule produtos e serviços em qualquer ano.',
+    desc: 'O preço de um produto ou serviço, hoje e em qualquer ano da transição.',
+    glifo: 'calculadora',
+    informa: 'um preço',
   },
   {
     para: '/cesta',
     titulo: 'Minha cesta mensal',
-    desc: 'O orçamento da família inteiro, hoje × novo sistema — categoria por categoria.',
+    desc: 'O orçamento da família inteiro, categoria por categoria.',
+    glifo: 'cesta',
+    informa: 'seu mês',
   },
   {
     para: '/cashback',
     titulo: 'Simulador de cashback',
     desc: 'A devolução de imposto para famílias do CadÚnico, conta por conta.',
+    glifo: 'cashback',
+    informa: 'sua família',
   },
   {
     para: '/raio-x',
     titulo: 'Raio-X da família',
-    desc: 'Cesta + cashback num retrato só: o efeito líquido do sistema pleno no orçamento.',
+    desc: 'Cesta menos cashback: o efeito líquido do sistema pleno no orçamento.',
+    glifo: 'raio-x',
+    informa: 'renda e consumo',
   },
   {
-    para: '/setores',
-    titulo: 'Impacto por setor',
-    desc: 'Quem tende a pagar mais, quem tende a pagar menos — e por quê.',
-  },
-  {
-    para: '/glossario',
-    titulo: 'Glossário e fontes',
-    desc: 'Do split payment ao nanoempreendedor, tudo pesquisável e referenciado.',
+    // seção da Calculadora: o parâmetro de receita a abre e rola até ela
+    para: '/calculadora?rec=120000',
+    titulo: 'Para quem vende',
+    desc: 'Onde o seu negócio se encaixa e quanto crédito ele passa ao cliente.',
+    glifo: 'vende',
+    informa: 'sua receita',
   },
 ]
+
+function EntradaDoIndice({ e }: { e: EntradaIndice }) {
+  return (
+    <Link to={e.para} className="indice-item">
+      <Glifo tipo={e.glifo} />
+      <span className="indice-titulo">{e.titulo}</span>
+      <span className="indice-desc">{e.desc}</span>
+      {e.informa && (
+        <span className="indice-informa mono">
+          você informa
+          <b>{e.informa}</b>
+        </span>
+      )}
+    </Link>
+  )
+}
 
 export function Home() {
   const series = [
@@ -207,16 +263,27 @@ export function Home() {
         </section>
 
         <section className="secao">
-          <h2>Explore</h2>
-          <div className="ferramentas">
-            {FERRAMENTAS.map((f) => (
-              <Link key={f.para} to={f.para} className="ferramenta">
-                <span className="ferramenta-titulo">{f.titulo}</span>
-                <span className="ferramenta-desc">{f.desc}</span>
-                <span className="ferramenta-seta" aria-hidden>
-                  →
-                </span>
-              </Link>
+          <h2>Por onde começar</h2>
+          <p className="secao-desc">
+            Metade do atlas explica a reforma. A outra metade calcula o efeito dela no seu caso.
+          </p>
+          {/* malha única para as duas famílias: assim as nove entradas caem no
+              mesmo ritmo de colunas e os glifos se alinham de uma para a outra */}
+          <div className="indice">
+            <p className="indice-familia">
+              <span>Para entender</span>
+              <span className="indice-conta mono">{PARA_ENTENDER.length} páginas</span>
+            </p>
+            {PARA_ENTENDER.map((e) => (
+              <EntradaDoIndice key={e.para} e={e} />
+            ))}
+
+            <p className="indice-familia">
+              <span>Para simular</span>
+              <span className="indice-conta mono">{PARA_SIMULAR.length} ferramentas</span>
+            </p>
+            {PARA_SIMULAR.map((e) => (
+              <EntradaDoIndice key={e.para} e={e} />
             ))}
           </div>
         </section>

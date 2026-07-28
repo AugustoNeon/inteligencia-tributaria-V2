@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LIMITES_REGIME, compararCredito, opcoesDoVendedor } from './regime'
+import { DAS_MAX_PCT, LIMITES_REGIME, compararCredito, dasDaUrl, opcoesDoVendedor } from './regime'
 
 const disponiveis = (receita: number, rural = false) =>
   opcoesDoVendedor(receita, rural)
@@ -60,5 +60,28 @@ describe('compararCredito', () => {
   it('crédito por dentro nunca supera o crédito integral', () => {
     const c = compararCredito(1000, 0.106, 0.2)
     expect(c.porDentro).toBeLessThanOrEqual(c.porFora)
+  })
+})
+
+describe('dasDaUrl', () => {
+  it('parâmetro ausente devolve null, não zero', () => {
+    // Number(null) é 0 e passaria numa checagem só de faixa: o link
+    // "/calculadora?rec=120000" zeraria o campo em vez de manter o padrão
+    expect(dasDaUrl(null)).toBeNull()
+    expect(dasDaUrl('')).toBeNull()
+    expect(dasDaUrl('   ')).toBeNull()
+  })
+
+  it('zero explícito é um valor legítimo', () => {
+    expect(dasDaUrl('0')).toBe(0)
+  })
+
+  it('aceita a faixa do campo e recusa o resto', () => {
+    expect(dasDaUrl('3')).toBe(3)
+    expect(dasDaUrl('4.5')).toBe(4.5)
+    expect(dasDaUrl(String(DAS_MAX_PCT))).toBe(DAS_MAX_PCT)
+    expect(dasDaUrl(String(DAS_MAX_PCT + 0.1))).toBeNull()
+    expect(dasDaUrl('-1')).toBeNull()
+    expect(dasDaUrl('muito')).toBeNull()
   })
 })
