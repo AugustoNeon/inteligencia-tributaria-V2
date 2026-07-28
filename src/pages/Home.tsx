@@ -176,9 +176,10 @@ const PARA_SIMULAR: EntradaIndice[] = [
   },
 ]
 
-function EntradaDoIndice({ e }: { e: EntradaIndice }) {
+/** `entender` são 4 numa linha e as ferramentas 5: a classe dá a largura certa. */
+function EntradaDoIndice({ e, familia }: { e: EntradaIndice; familia: 'entender' | 'simular' }) {
   return (
-    <Link to={e.para} className="indice-item">
+    <Link to={e.para} className={`indice-item${familia === 'entender' ? ' indice-entender' : ''}`}>
       <Glifo tipo={e.glifo} />
       <span className="indice-titulo">{e.titulo}</span>
       <span className="indice-desc">{e.desc}</span>
@@ -275,7 +276,7 @@ export function Home() {
               <span className="indice-conta mono">{PARA_ENTENDER.length} páginas</span>
             </p>
             {PARA_ENTENDER.map((e) => (
-              <EntradaDoIndice key={e.para} e={e} />
+              <EntradaDoIndice key={e.para} e={e} familia="entender" />
             ))}
 
             <p className="indice-familia">
@@ -283,7 +284,7 @@ export function Home() {
               <span className="indice-conta mono">{PARA_SIMULAR.length} ferramentas</span>
             </p>
             {PARA_SIMULAR.map((e) => (
-              <EntradaDoIndice key={e.para} e={e} />
+              <EntradaDoIndice key={e.para} e={e} familia="simular" />
             ))}
           </div>
         </section>

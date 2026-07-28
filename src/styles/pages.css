@@ -253,12 +253,39 @@
    se alinhariam de uma para a outra. */
 .indice {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
-  gap: 0 4px;
+  grid-template-columns: 1fr;
+  gap: 0 6px;
+  /* o recuo devolve o texto da primeira coluna ao alinhamento do título,
+     sem que a área de hover de um item invada a do vizinho */
+  margin-inline: -14px;
+}
+
+@media (min-width: 560px) {
+  .indice {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Malha de 20 colunas: é o menor múltiplo comum de 4 e 5, então a família de
+   quatro páginas e a de cinco ferramentas preenchem a linha inteira, cada uma
+   no seu ritmo, sem sobrar célula vazia à direita. */
+@media (min-width: 880px) {
+  .indice {
+    grid-template-columns: repeat(20, 1fr);
+  }
+
+  .indice-item {
+    grid-column: span 4;
+  }
+
+  .indice-item.indice-entender {
+    grid-column: span 5;
+  }
 }
 
 .indice-familia {
   grid-column: 1 / -1;
+  margin-inline: 14px;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -286,7 +313,6 @@
 .indice-item {
   display: block;
   padding: 18px 14px 20px;
-  margin-left: -14px;
   border-radius: var(--raio-s);
   text-decoration: none;
   color: var(--ink);
