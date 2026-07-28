@@ -1,0 +1,1 @@
+import{r as t}from"./index-CxyhFA-f.js";function f(){const r=t.useRef(null),[o,n]=t.useState(0);return t.useEffect(()=>{const e=r.current;if(!e)return;const s=new ResizeObserver(c=>{for(const u of c)n(u.contentRect.width)});return s.observe(e),n(e.getBoundingClientRect().width),()=>s.disconnect()},[]),{ref:r,width:o}}export{f as u};
